@@ -8,7 +8,7 @@ const CONFIG = {
   APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycby01QP5XHgA8PMgvAb_umccjtnxFyYJ0_A794upNEaHy-pyK2xk5jLbmWsA5p4HOmBzmw/exec',
 
   // WhatsApp number (without + or spaces, include country code)
-  WHATSAPP_NUMBER: '8318873808',
+  WHATSAPP_NUMBER: '918318873808',
 
   // Countdown: set your target date/time (24-hour format)
   COUNTDOWN_TARGET: (() => {
