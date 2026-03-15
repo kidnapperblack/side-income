@@ -4,367 +4,250 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard — IncomePro</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
   /* ══════════════════════════════════════════════════════════
-     ADMIN DASHBOARD — SELF-CONTAINED STYLES
+     ADMIN DASHBOARD STYLES
   ══════════════════════════════════════════════════════════ */
   :root {
-    --bg:        #03050d;
-    --s1:        #080c18;
-    --s2:        #0d1225;
-    --s3:        rgba(255,255,255,0.04);
-    --s4:        rgba(255,255,255,0.07);
-    --border:    rgba(255,255,255,0.08);
-    --green:     #00f082;
-    --gd:        rgba(0,240,130,0.1);
-    --gb:        rgba(0,240,130,0.22);
-    --gold:      #f5c842;
-    --gob:       rgba(245,200,66,0.22);
-    --red:       #ff4f6d;
-    --blue:      #4fa3ff;
-    --text1:     #eef2ff;
-    --text2:     rgba(238,242,255,0.6);
-    --text3:     rgba(238,242,255,0.3);
-    --font:      'Outfit', sans-serif;
-    --fh:        'Noto Sans Devanagari', sans-serif;
-    --r:         14px;
-    --ease:      cubic-bezier(0.16,1,0.3,1);
-    --shadow:    0 8px 40px rgba(0,0,0,0.5);
-    --gg:        0 0 40px rgba(0,240,130,0.3);
+    --bg:       #03050d; --s1: #080c18; --s2: #0d1225;
+    --s3: rgba(255,255,255,0.04); --s4: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.08);
+    --green: #00f082; --gd: rgba(0,240,130,0.1); --gb: rgba(0,240,130,0.22);
+    --gold: #f5c842; --gob: rgba(245,200,66,0.22);
+    --red: #ff4f6d; --blue: #4fa3ff;
+    --t1: #eef2ff; --t2: rgba(238,242,255,0.6); --t3: rgba(238,242,255,0.3);
+    --font: 'Outfit',sans-serif; --fh: 'Noto Sans Devanagari',sans-serif;
+    --r: 14px; --ease: cubic-bezier(0.16,1,0.3,1);
+    --shadow: 0 8px 40px rgba(0,0,0,0.5);
+    --gg: 0 0 40px rgba(0,240,130,0.3);
   }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--green);border-radius:10px}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text1);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--green); border-radius: 10px; }
+  /* LAYOUT */
+  .layout{display:flex;min-height:100vh}
 
-  /* ── LAYOUT ── */
-  .layout { display: flex; min-height: 100vh; }
+  /* SIDEBAR */
+  .sidebar{
+    width:220px;flex-shrink:0;
+    background:rgba(8,12,24,0.98);
+    border-right:1px solid var(--border);
+    padding:22px 14px;
+    position:sticky;top:0;height:100vh;
+    display:flex;flex-direction:column;gap:3px;overflow-y:auto;
+  }
+  .sb-logo{font-size:1.15rem;font-weight:900;letter-spacing:-0.5px;color:var(--t1);margin-bottom:3px}
+  .sb-logo span{color:var(--green)}
+  .sb-role{font-size:0.65rem;color:var(--t3);letter-spacing:1px;text-transform:uppercase;
+    margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+  .sb-sec{font-size:0.62rem;color:var(--t3);letter-spacing:1px;text-transform:uppercase;padding:10px 10px 3px}
+  .nav-btn{
+    display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;
+    color:var(--t2);cursor:pointer;transition:all .2s;font-size:0.82rem;font-weight:500;
+    text-decoration:none;border:none;background:none;width:100%;text-align:left;
+  }
+  .nav-btn:hover,.nav-btn.active{background:var(--gd);color:var(--green)}
+  .nav-btn.active{border:1px solid var(--gb)}
+  .nav-btn .ni{font-size:.95rem;width:16px;text-align:center}
+  .sb-footer{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);
+    font-size:0.65rem;color:var(--t3);font-family:var(--fh);line-height:1.6}
+  .sb-footer a{color:var(--green);text-decoration:none}
 
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: 230px; flex-shrink: 0;
-    background: rgba(8,12,24,0.98);
-    border-right: 1px solid var(--border);
-    padding: 24px 16px;
-    position: sticky; top: 0; height: 100vh;
-    display: flex; flex-direction: column; gap: 4px;
-    overflow-y: auto;
-  }
-  .sb-logo {
-    font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px;
-    color: var(--text1); margin-bottom: 4px;
-  }
-  .sb-logo span { color: var(--green); }
-  .sb-role {
-    font-size: 0.68rem; color: var(--text3); letter-spacing: 1px;
-    text-transform: uppercase; margin-bottom: 28px;
-    padding-bottom: 20px; border-bottom: 1px solid var(--border);
-  }
-  .sb-section { font-size: 0.65rem; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; padding: 12px 12px 4px; }
-  .nav-link {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border-radius: 10px;
-    color: var(--text2); cursor: pointer; transition: all 0.2s;
-    font-size: 0.85rem; font-weight: 500; text-decoration: none;
-    border: none; background: none; width: 100%; text-align: left;
-  }
-  .nav-link:hover { background: var(--gd); color: var(--green); }
-  .nav-link.active { background: var(--gd); color: var(--green); border: 1px solid var(--gb); }
-  .nav-link .ni { font-size: 1rem; width: 18px; text-align: center; }
-  .sb-footer {
-    margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border);
-    font-size: 0.68rem; color: var(--text3);
-    font-family: var(--fh); line-height: 1.6;
-  }
-  .sb-footer a { color: var(--green); text-decoration: none; }
+  /* MAIN */
+  .main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 
-  /* ── MAIN ── */
-  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  /* TOPBAR */
+  .topbar{
+    position:sticky;top:0;z-index:20;padding:14px 24px;
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(3,5,13,0.93);border-bottom:1px solid var(--border);
+    backdrop-filter:blur(16px);flex-wrap:wrap;gap:10px;
+  }
+  .tb-title{font-size:.95rem;font-weight:700}
+  .tb-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-  /* ── TOPBAR ── */
-  .topbar {
-    position: sticky; top: 0; z-index: 20;
-    padding: 16px 28px;
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(3,5,13,0.92);
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(16px);
-    flex-wrap: wrap; gap: 12px;
+  /* BUTTONS */
+  .btn{
+    padding:8px 15px;border-radius:50px;font-family:var(--font);
+    font-size:.76rem;font-weight:700;cursor:pointer;transition:all .25s;
+    border:none;display:inline-flex;align-items:center;gap:6px;
   }
-  .topbar-title { font-size: 1rem; font-weight: 700; }
-  .topbar-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .btn-ghost{background:var(--gd);border:1px solid var(--gb);color:var(--green)}
+  .btn-ghost:hover{background:var(--green);color:var(--bg);box-shadow:var(--gg)}
+  .btn-solid{background:linear-gradient(135deg,var(--green),#00c869);color:var(--bg)}
+  .btn-solid:hover{box-shadow:var(--gg);transform:translateY(-1px)}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#f5a200);color:var(--bg)}
+  .btn-gold:hover{box-shadow:0 0 20px rgba(245,200,66,.4);transform:translateY(-1px)}
+  .btn-red{background:rgba(255,79,109,.1);border:1px solid rgba(255,79,109,.25);color:var(--red)}
+  .btn-red:hover{background:var(--red);color:#fff}
 
-  .btn-icon {
-    padding: 8px 16px; border-radius: 50px;
-    font-family: var(--font); font-size: 0.78rem; font-weight: 700;
-    cursor: pointer; transition: all 0.25s; border: none; display: inline-flex; align-items: center; gap: 7px;
-  }
-  .btn-outline { background: var(--gd); border: 1px solid var(--gb); color: var(--green); }
-  .btn-outline:hover { background: var(--green); color: var(--bg); box-shadow: var(--gg); }
-  .btn-solid { background: linear-gradient(135deg, var(--green), #00c869); color: var(--bg); }
-  .btn-solid:hover { box-shadow: var(--gg); transform: translateY(-1px); }
-  .btn-gold { background: linear-gradient(135deg, var(--gold), #f5a200); color: var(--bg); }
-  .btn-gold:hover { box-shadow: 0 0 20px rgba(245,200,66,0.4); transform: translateY(-1px); }
-  .btn-red { background: rgba(255,79,109,0.1); border: 1px solid rgba(255,79,109,0.25); color: var(--red); }
-  .btn-red:hover { background: var(--red); color: #fff; }
+  /* CONTENT */
+  .content{padding:22px 24px;flex:1}
 
-  /* ── CONTENT ── */
-  .content { padding: 24px 28px; flex: 1; }
+  /* PANELS */
+  .panel{display:none}
+  .panel.active{display:block}
 
-  /* ── SECTION PANELS ── */
-  .panel { display: none; }
-  .panel.active { display: block; }
+  /* SETUP CARD */
+  .setup-card{
+    background:var(--s3);border:1px solid rgba(245,200,66,.18);
+    border-radius:var(--r);padding:22px;margin-bottom:22px;
+  }
+  .setup-title{font-size:.9rem;font-weight:800;color:var(--gold);
+    margin-bottom:5px;display:flex;align-items:center;gap:7px}
+  .setup-hint{font-size:.75rem;color:var(--t3);font-family:var(--fh);
+    margin-bottom:14px;line-height:1.7}
+  .setup-row{display:flex;gap:10px}
+  .setup-input{
+    flex:1;padding:11px 13px;background:var(--s4);border:1px solid var(--border);
+    border-radius:8px;color:var(--t1);font-family:var(--font);font-size:.86rem;
+    outline:none;transition:border-color .25s;
+  }
+  .setup-input:focus{border-color:var(--gb)}
+  .setup-input::placeholder{color:var(--t3)}
 
-  /* ── STAT CARDS ── */
-  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
-  .stat-card {
-    padding: 22px 18px;
-    background: var(--s3);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    position: relative; overflow: hidden;
-    transition: border-color 0.3s, transform 0.2s;
-    cursor: default;
+  /* STAT CARDS */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .sc{
+    padding:20px 16px;background:var(--s3);border:1px solid var(--border);
+    border-radius:var(--r);position:relative;overflow:hidden;transition:border-color .3s,transform .2s;
   }
-  .stat-card:hover { transform: translateY(-2px); }
-  .stat-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: var(--accent-color, var(--green));
-  }
-  .stat-card.c-g { --accent-color: var(--green); }
-  .stat-card.c-g:hover { border-color: var(--gb); }
-  .stat-card.c-o { --accent-color: var(--gold); }
-  .stat-card.c-o:hover { border-color: var(--gob); }
-  .stat-card.c-b { --accent-color: var(--blue); }
-  .stat-card.c-b:hover { border-color: rgba(79,163,255,0.25); }
-  .stat-card.c-r { --accent-color: var(--red); }
-  .stat-card.c-r:hover { border-color: rgba(255,79,109,0.25); }
-  .sc-icon { font-size: 1.3rem; margin-bottom: 10px; }
-  .sc-num { font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 4px; }
-  .stat-card.c-g .sc-num { color: var(--green); }
-  .stat-card.c-o .sc-num { color: var(--gold); }
-  .stat-card.c-b .sc-num { color: var(--blue); }
-  .stat-card.c-r .sc-num { color: var(--red); }
-  .sc-lbl { font-size: 0.75rem; color: var(--text3); font-family: var(--fh); }
+  .sc:hover{transform:translateY(-2px)}
+  .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--green))}
+  .sc.g{--ac:var(--green)}.sc.g:hover{border-color:var(--gb)}
+  .sc.o{--ac:var(--gold)}.sc.o:hover{border-color:var(--gob)}
+  .sc.b{--ac:var(--blue)}.sc.b:hover{border-color:rgba(79,163,255,.25)}
+  .sc.r{--ac:var(--red)}.sc.r:hover{border-color:rgba(255,79,109,.25)}
+  .sc-icon{font-size:1.2rem;margin-bottom:9px}
+  .sc-num{font-size:1.9rem;font-weight:900;line-height:1;margin-bottom:3px}
+  .sc.g .sc-num{color:var(--green)}.sc.o .sc-num{color:var(--gold)}
+  .sc.b .sc-num{color:var(--blue)}.sc.r .sc-num{color:var(--red)}
+  .sc-lbl{font-size:.72rem;color:var(--t3);font-family:var(--fh)}
 
-  /* ── TABLE CARD ── */
-  .table-card {
-    background: var(--s3);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    overflow: hidden;
+  /* TABLE CARD */
+  .tcard{background:var(--s3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+  .tcard-hdr{
+    padding:16px 20px;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
   }
-  .table-hdr {
-    padding: 18px 22px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 12px;
+  .tcard-title{font-size:.9rem;font-weight:700}
+  .search-inp{
+    padding:7px 13px;background:var(--s4);border:1px solid var(--border);
+    border-radius:8px;color:var(--t1);font-family:var(--font);font-size:.8rem;
+    outline:none;width:200px;transition:border-color .25s;
   }
-  .table-hdr-title { font-size: 0.95rem; font-weight: 700; }
-  .search-input {
-    padding: 8px 14px;
-    background: var(--s4);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text1);
-    font-family: var(--font); font-size: 0.82rem;
-    outline: none; width: 220px;
-    transition: border-color 0.25s;
+  .search-inp:focus{border-color:var(--gb)}
+  .search-inp::placeholder{color:var(--t3)}
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse}
+  thead tr{background:rgba(255,255,255,.025)}
+  th{padding:11px 16px;text-align:left;font-size:.65rem;font-weight:700;
+    color:var(--t3);text-transform:uppercase;letter-spacing:.8px;
+    border-bottom:1px solid var(--border);white-space:nowrap}
+  td{padding:11px 16px;font-size:.83rem;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:rgba(255,255,255,.025)}
+  .td-name{font-weight:600}
+  .td-phone{font-variant-numeric:tabular-nums;color:var(--t2)}
+  .city-chip{
+    display:inline-block;padding:2px 9px;border-radius:50px;
+    background:rgba(245,200,66,.08);color:var(--gold);font-family:var(--fh);font-size:.75rem;
   }
-  .search-input:focus { border-color: var(--gb); }
-  .search-input::placeholder { color: var(--text3); }
+  .b-today{display:inline-block;padding:2px 8px;border-radius:50px;
+    background:var(--gd);color:var(--green);font-size:.65rem;font-weight:700}
+  .b-old{display:inline-block;padding:2px 8px;border-radius:50px;
+    background:var(--s4);color:var(--t3);font-size:.65rem}
+  .tbl-empty,.tbl-loading{padding:50px 24px;text-align:center;color:var(--t3);
+    font-family:var(--fh);font-size:.88rem}
+  .spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--green);
+    border-radius:50%;animation:spin .75s linear infinite;margin:0 auto 12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
-  .tbl-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: rgba(255,255,255,0.025); }
-  th {
-    padding: 12px 18px; text-align: left;
-    font-size: 0.68rem; font-weight: 700;
-    color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px;
-    border-bottom: 1px solid var(--border); white-space: nowrap;
+  /* PAGINATION */
+  .pg{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 20px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;
   }
-  td {
-    padding: 12px 18px; font-size: 0.85rem;
-    border-bottom: 1px solid rgba(255,255,255,0.035);
-    transition: background 0.15s;
+  .pg-info{font-size:.72rem;color:var(--t3)}
+  .pg-btns{display:flex;gap:4px}
+  .pgb{
+    width:28px;height:28px;border-radius:7px;background:var(--s4);
+    border:1px solid var(--border);color:var(--t2);cursor:pointer;font-size:.76rem;
+    transition:all .2s;display:flex;align-items:center;justify-content:center;
   }
-  tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: rgba(255,255,255,0.025); }
+  .pgb:hover,.pgb.active{background:var(--gd);border-color:var(--gb);color:var(--green)}
+  .pgb:disabled{opacity:.3;cursor:not-allowed}
 
-  .td-name { font-weight: 600; }
-  .td-mobile { font-variant-numeric: tabular-nums; color: var(--text2); }
-  .td-city {
-    display: inline-block;
-    padding: 3px 10px; border-radius: 50px;
-    background: rgba(245,200,66,0.08); color: var(--gold);
-    font-family: var(--fh); font-size: 0.78rem;
+  /* CONTROL PANEL */
+  .cp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .cp-card{
+    background:var(--s3);border:1px solid var(--border);
+    border-radius:var(--r);padding:20px 18px;position:relative;overflow:hidden;
   }
-  .badge-today {
-    display: inline-block; padding: 3px 9px; border-radius: 50px;
-    background: var(--gd); color: var(--green);
-    font-size: 0.68rem; font-weight: 700;
+  .cp-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:1.5px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
   }
-  .badge-old {
-    display: inline-block; padding: 3px 9px; border-radius: 50px;
-    background: var(--s4); color: var(--text3);
-    font-size: 0.68rem;
+  .cp-title{font-size:.85rem;font-weight:800;color:var(--gold);
+    margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  .cp-desc{font-size:.72rem;color:var(--t3);font-family:var(--fh);margin-bottom:12px;line-height:1.65}
+  .cp-field{margin-bottom:12px}
+  .cp-lbl{display:block;font-size:.65rem;color:var(--t3);margin-bottom:5px;
+    text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+  .cp-inp{
+    width:100%;padding:10px 13px;background:var(--s4);border:1px solid var(--border);
+    border-radius:8px;color:var(--t1);font-family:var(--font);font-size:.85rem;outline:none;
+    transition:border-color .25s;
   }
+  .cp-inp:focus{border-color:var(--gb)}
+  .cp-inp::placeholder{color:var(--t3)}
+  .cp-preview{
+    margin-bottom:12px;border-radius:9px;overflow:hidden;border:1px solid var(--border);
+    background:var(--s2);aspect-ratio:3/2;display:flex;align-items:center;justify-content:center;
+    color:var(--t3);font-size:.78rem;font-family:var(--fh);position:relative;
+  }
+  .cp-preview img{width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0}
+  .cp-status{
+    font-size:.72rem;font-family:var(--fh);margin-top:9px;padding:7px 11px;
+    border-radius:8px;display:none;
+  }
+  .cp-status.ok{background:var(--gd);color:var(--green);border:1px solid var(--gb);display:block}
+  .cp-status.err{background:rgba(255,79,109,.1);color:var(--red);border:1px solid rgba(255,79,109,.25);display:block}
 
-  /* Empty / Loading states */
-  .tbl-empty, .tbl-loading {
-    padding: 52px 24px; text-align: center;
-    color: var(--text3); font-family: var(--fh); font-size: 0.9rem;
+  /* TOAST */
+  .toast-area{
+    position:fixed;bottom:18px;right:18px;z-index:500;
+    display:flex;flex-direction:column;gap:7px;pointer-events:none;
   }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 3px solid var(--border); border-top-color: var(--green);
-    border-radius: 50%; animation: spin 0.75s linear infinite;
-    margin: 0 auto 14px;
+  .toast{
+    padding:10px 15px;background:var(--s2);border:1px solid var(--border);
+    border-radius:var(--r);font-size:.8rem;font-family:var(--fh);max-width:270px;
+    box-shadow:var(--shadow);pointer-events:auto;display:flex;align-items:center;gap:8px;
+    animation:toastIn .35s var(--ease) both;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast.ok{border-color:var(--gb);color:var(--green)}
+  .toast.err{border-color:rgba(255,79,109,.3);color:var(--red)}
+  @keyframes toastIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 
-  /* ── PAGINATION ── */
-  .pagination {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 22px; border-top: 1px solid var(--border);
-    flex-wrap: wrap; gap: 10px;
+  /* RESPONSIVE */
+  @media(max-width:900px){
+    .sidebar{display:none}
+    .stats-grid{grid-template-columns:1fr 1fr}
+    .cp-grid{grid-template-columns:1fr}
+    .content{padding:14px}
+    .topbar{padding:12px 14px}
+    .search-inp{width:100%}
   }
-  .pg-info { font-size: 0.75rem; color: var(--text3); }
-  .pg-btns { display: flex; gap: 5px; }
-  .pg-btn {
-    width: 30px; height: 30px; border-radius: 8px;
-    background: var(--s4); border: 1px solid var(--border);
-    color: var(--text2); cursor: pointer; font-size: 0.78rem;
-    transition: all 0.2s; display: flex; align-items: center; justify-content: center;
-  }
-  .pg-btn:hover, .pg-btn.active {
-    background: var(--gd); border-color: var(--gb); color: var(--green);
-  }
-  .pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  /* ══════════════════════════════
-     CONTROL PANEL (Admin Settings)
-  ══════════════════════════════ */
-  .cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-
-  .cp-card {
-    background: var(--s3); border: 1px solid var(--border);
-    border-radius: var(--r); padding: 22px 20px;
-    position: relative; overflow: hidden;
-  }
-  .cp-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1.5px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-  .cp-title {
-    font-size: 0.88rem; font-weight: 800; color: var(--gold);
-    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-  }
-  .cp-desc { font-size: 0.75rem; color: var(--text3); font-family: var(--fh); margin-bottom: 14px; line-height: 1.6; }
-
-  .cp-field { margin-bottom: 14px; }
-  .cp-label {
-    display: block; font-size: 0.68rem; color: var(--text3);
-    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
-  }
-  .cp-input {
-    width: 100%; padding: 11px 14px;
-    background: var(--s4); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text1);
-    font-family: var(--font); font-size: 0.88rem;
-    outline: none; transition: border-color 0.25s;
-  }
-  .cp-input:focus { border-color: var(--gb); }
-  .cp-input::placeholder { color: var(--text3); }
-
-  /* Preview box for poster */
-  .poster-preview-wrap {
-    margin-bottom: 14px;
-    border-radius: 10px; overflow: hidden;
-    border: 1px solid var(--border);
-    background: var(--s2);
-    aspect-ratio: 3/2;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text3); font-size: 0.8rem; font-family: var(--fh);
-    position: relative;
-  }
-  .poster-preview-wrap img {
-    width: 100%; height: 100%; object-fit: cover; display: none;
-  }
-
-  /* Status message */
-  .save-status {
-    font-size: 0.75rem; font-family: var(--fh); margin-top: 10px;
-    padding: 8px 12px; border-radius: 8px; display: none;
-  }
-  .save-status.ok  { background: var(--gd); color: var(--green); border: 1px solid var(--gb); }
-  .save-status.err { background: rgba(255,79,109,0.1); color: var(--red); border: 1px solid rgba(255,79,109,0.25); }
-
-  /* Setup panel */
-  .setup-card {
-    background: var(--s3); border: 1px solid rgba(245,200,66,0.15);
-    border-radius: var(--r); padding: 24px 22px; margin-bottom: 24px;
-  }
-  .setup-title {
-    font-size: 0.95rem; font-weight: 800; color: var(--gold);
-    margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
-  }
-  .setup-hint { font-size: 0.78rem; color: var(--text3); font-family: var(--fh); margin-bottom: 16px; line-height: 1.7; }
-  .setup-row { display: flex; gap: 10px; }
-  .setup-input {
-    flex: 1; padding: 12px 14px;
-    background: var(--s4); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text1);
-    font-family: var(--font); font-size: 0.88rem; outline: none;
-    transition: border-color 0.25s;
-  }
-  .setup-input:focus { border-color: var(--gb); }
-  .setup-input::placeholder { color: var(--text3); }
-
-  /* Toast */
-  .toast-area {
-    position: fixed; bottom: 20px; right: 20px; z-index: 500;
-    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
-  }
-  .toast {
-    padding: 11px 16px; background: var(--s2); border: 1px solid var(--border);
-    border-radius: var(--r); font-size: 0.82rem; font-family: var(--fh);
-    max-width: 280px; box-shadow: var(--shadow); pointer-events: auto;
-    display: flex; align-items: center; gap: 8px;
-    animation: toastIn 0.35s var(--ease) both;
-  }
-  .toast.ok  { border-color: var(--gb); color: var(--green); }
-  .toast.err { border-color: rgba(255,79,109,0.3); color: var(--red); }
-  @keyframes toastIn {
-    from { opacity:0; transform: translateX(16px); }
-    to   { opacity:1; transform: translateX(0); }
-  }
-
-  /* ── Responsive ── */
-  @media (max-width: 960px) {
-    .sidebar { display: none; }
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    .cp-grid { grid-template-columns: 1fr; }
-    .content { padding: 16px; }
-    .topbar { padding: 14px 16px; }
-    .search-input { width: 100%; }
-  }
-  @media (max-width: 520px) {
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    th:nth-child(5), td:nth-child(5) { display: none; }
+  @media(max-width:520px){
+    .stats-grid{grid-template-columns:1fr 1fr}
+    th:nth-child(5),td:nth-child(5){display:none}
   }
   </style>
 </head>
@@ -372,133 +255,102 @@
 
 <div class="layout">
 
-  <!-- ════════════════════════════════
-       SIDEBAR
-  ════════════════════════════════ -->
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
   <aside class="sidebar">
     <div class="sb-logo">Income<span>Pro</span></div>
     <div class="sb-role">⚡ Admin Dashboard</div>
 
-    <div class="sb-section">Analytics</div>
-    <button class="nav-link active" onclick="showPanel('leads')" id="nav-leads">
+    <div class="sb-sec">Analytics</div>
+    <button class="nav-btn active" id="nav-leads" onclick="showPanel('leads')">
       <span class="ni">📊</span> Dashboard
     </button>
-    <button class="nav-link" onclick="showPanel('leads')" id="nav-all">
+    <button class="nav-btn" onclick="showPanel('leads')">
       <span class="ni">👥</span> All Leads
     </button>
 
-    <div class="sb-section">Control</div>
-    <button class="nav-link" onclick="showPanel('settings')" id="nav-settings">
+    <div class="sb-sec">Control</div>
+    <button class="nav-btn" id="nav-settings" onclick="showPanel('settings')">
       <span class="ni">⚙️</span> Settings
     </button>
-    <button class="nav-link" onclick="showPanel('settings')">
+    <button class="nav-btn" onclick="showPanel('settings')">
       <span class="ni">🖼️</span> Poster Manager
     </button>
-    <button class="nav-link" onclick="showPanel('settings')">
-      <span class="ni">⏱️</span> Timer Control
+    <button class="nav-btn" onclick="showPanel('settings')">
+      <span class="ni">⏱️</span> Timer / Seats
     </button>
 
-    <div class="sb-section">Tools</div>
-    <button class="nav-link" onclick="exportCSV()">
+    <div class="sb-sec">Tools</div>
+    <button class="nav-btn" onclick="exportCSV()">
       <span class="ni">📥</span> Export CSV
     </button>
-    <a href="index.html" class="nav-link" target="_blank">
+    <a href="index.html" class="nav-btn" target="_blank">
       <span class="ni">🌐</span> Landing Page ↗
     </a>
 
     <div class="sb-footer">
-      <p>डेटा: Google Sheet से</p>
-      <p style="margin-top:5px;"><a href="#" onclick="loadAll()">🔄 Refresh Data</a></p>
+      <p>डेटा: Supabase से</p>
+      <p style="margin-top:4px"><a href="#" onclick="loadAll()">🔄 Refresh</a></p>
     </div>
   </aside>
 
-  <!-- ════════════════════════════════
-       MAIN CONTENT
-  ════════════════════════════════ -->
+  <!-- ═══════════════ MAIN ═══════════════ -->
   <div class="main">
 
     <!-- TOPBAR -->
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title">📋 Lead Dashboard</div>
-      <div class="topbar-right">
-        <button class="btn-icon btn-outline" onclick="loadAll()">🔄 Refresh</button>
-        <button class="btn-icon btn-solid" onclick="exportCSV()">📥 CSV Export</button>
-        <button class="btn-icon btn-gold" onclick="showPanel('settings')">⚙️ Settings</button>
+      <div class="tb-title" id="tb-title">📋 Lead Dashboard</div>
+      <div class="tb-right">
+        <button class="btn btn-ghost" onclick="loadAll()">🔄 Refresh</button>
+        <button class="btn btn-solid" onclick="exportCSV()">📥 CSV Export</button>
+        <button class="btn btn-gold" onclick="showPanel('settings')">⚙️ Settings</button>
       </div>
     </div>
 
-    <!-- CONTENT AREA -->
+    <!-- CONTENT -->
     <div class="content">
 
-      <!-- ══ SETUP CARD (shown until URL is configured) ══ -->
+      <!-- SETUP CARD — visible until Supabase is configured -->
       <div class="setup-card" id="setup-card">
-        <div class="setup-title">🔧 Google Apps Script URL Setup</div>
+        <div class="setup-title">🔧 Supabase Connection Setup</div>
         <p class="setup-hint">
-          नीचे अपना deployed Google Apps Script Web App URL डालें और Save करें।<br>
-          यह URL dashboard को Google Sheet से connect करेगा।<br>
-          <strong style="color:var(--gold);">apps-script.gs</strong> deploy करने के बाद URL मिलेगा।
+          अपना Supabase Project URL और Anon Key डालें।<br>
+          Supabase Dashboard → Settings → API से मिलेगा।<br>
+          <strong style="color:var(--gold)">एक बार save होने पर auto-connect होगा।</strong>
         </p>
+        <div class="setup-row" style="margin-bottom:10px">
+          <input class="setup-input" id="cfg-url" placeholder="https://xxxx.supabase.co" />
+          <button class="btn btn-ghost" onclick="copyFromScript()" title="script.js से auto-fill">📋 Auto-fill</button>
+        </div>
         <div class="setup-row">
-          <input
-            type="text"
-            class="setup-input"
-            id="gas-url-input"
-            placeholder="https://script.google.com/macros/s/YOUR_ID/exec"
-          />
-          <button class="btn-icon btn-solid" onclick="saveGasUrl()">💾 Save & Connect</button>
+          <input class="setup-input" id="cfg-key" placeholder="eyJhbGciOi... (anon key)" />
+          <button class="btn btn-solid" onclick="saveSupabaseConfig()">💾 Connect</button>
         </div>
       </div>
 
-      <!-- ══════════ PANEL: LEADS ══════════ -->
+      <!-- ═════ PANEL: LEADS ═════ -->
       <div class="panel active" id="panel-leads">
 
         <!-- Stat Cards -->
         <div class="stats-grid">
-          <div class="stat-card c-g">
-            <div class="sc-icon">📋</div>
-            <div class="sc-num" id="s-total">—</div>
-            <div class="sc-lbl">कुल Leads</div>
-          </div>
-          <div class="stat-card c-o">
-            <div class="sc-icon">📅</div>
-            <div class="sc-num" id="s-today">—</div>
-            <div class="sc-lbl">आज के Leads</div>
-          </div>
-          <div class="stat-card c-b">
-            <div class="sc-icon">🏙️</div>
-            <div class="sc-num" id="s-cities">—</div>
-            <div class="sc-lbl">शहर</div>
-          </div>
-          <div class="stat-card c-r">
-            <div class="sc-icon">📆</div>
-            <div class="sc-num" id="s-week">—</div>
-            <div class="sc-lbl">इस हफ्ते</div>
-          </div>
+          <div class="sc g"><div class="sc-icon">📋</div><div class="sc-num" id="s-total">—</div><div class="sc-lbl">कुल Leads</div></div>
+          <div class="sc o"><div class="sc-icon">📅</div><div class="sc-num" id="s-today">—</div><div class="sc-lbl">आज के Leads</div></div>
+          <div class="sc b"><div class="sc-icon">🏙️</div><div class="sc-num" id="s-cities">—</div><div class="sc-lbl">शहर</div></div>
+          <div class="sc r"><div class="sc-icon">📆</div><div class="sc-num" id="s-week">—</div><div class="sc-lbl">इस हफ्ते</div></div>
         </div>
 
-        <!-- Leads Table -->
-        <div class="table-card">
-          <div class="table-hdr">
-            <div class="table-hdr-title">👥 All Registrations</div>
-            <input
-              type="text"
-              class="search-input"
-              id="search-box"
-              placeholder="🔍 नाम, मोबाइल, शहर खोजें..."
-              oninput="filterTable()"
-            />
+        <!-- Lead Table -->
+        <div class="tcard">
+          <div class="tcard-hdr">
+            <div class="tcard-title">👥 All Registrations</div>
+            <input class="search-inp" id="search-box" placeholder="🔍 नाम, मोबाइल, शहर..." oninput="filterTable()" />
           </div>
-
-          <div class="tbl-wrap">
-            <div id="tbl-body">
-              <div class="tbl-loading">
-                <div class="spinner"></div>
-                <p>डेटा लोड होने की प्रतीक्षा करें...<br><small style="font-size:0.72rem;margin-top:6px;display:block;">ऊपर Apps Script URL configure करें</small></p>
-              </div>
+          <div class="tbl-wrap" id="tbl-body">
+            <div class="tbl-loading">
+              <div class="spinner"></div>
+              <p>Supabase से डेटा लोड हो रहा है...<br><small style="font-size:.7rem;margin-top:6px;display:block">ऊपर connection configure करें</small></p>
             </div>
           </div>
-
-          <div class="pagination" id="pagination" style="display:none">
+          <div class="pg" id="pg-wrap" style="display:none">
             <div class="pg-info" id="pg-info"></div>
             <div class="pg-btns" id="pg-btns"></div>
           </div>
@@ -506,104 +358,60 @@
 
       </div><!-- /panel-leads -->
 
-      <!-- ══════════ PANEL: SETTINGS ══════════ -->
+      <!-- ═════ PANEL: SETTINGS ═════ -->
       <div class="panel" id="panel-settings">
         <div class="cp-grid">
 
           <!-- 1. Poster Manager -->
           <div class="cp-card">
             <div class="cp-title">🖼️ Poster Manager</div>
-            <p class="cp-desc">
-              Landing Page पर दिखने वाला पोस्टर बदलें।<br>
-              किसी भी image का direct URL डालें।
-            </p>
-            <div class="poster-preview-wrap" id="poster-preview-wrap">
-              <span id="poster-preview-ph">Preview यहाँ दिखेगा</span>
-              <img id="poster-preview-img" alt="Poster Preview" />
+            <p class="cp-desc">Landing page पर दिखने वाला पोस्टर बदलें। Direct image URL डालें।</p>
+            <div class="cp-preview" id="cp-preview-box">
+              <span id="cp-preview-ph">Preview यहाँ दिखेगा</span>
+              <img id="cp-preview-img" alt="Poster Preview" />
             </div>
             <div class="cp-field">
-              <label class="cp-label">Poster Image URL</label>
-              <input
-                type="url"
-                class="cp-input"
-                id="cp-poster-url"
-                placeholder="https://example.com/poster.jpg"
-                oninput="previewPoster(this.value)"
-              />
+              <label class="cp-lbl">Poster Image URL</label>
+              <input class="cp-inp" id="cp-poster" placeholder="https://example.com/poster.jpg" oninput="previewPoster(this.value)" />
             </div>
-            <button class="btn-icon btn-gold" onclick="saveSetting('posterUrl', 'cp-poster-url', 'poster-status')">
-              💾 Poster Save करें
-            </button>
-            <div class="save-status" id="poster-status"></div>
+            <button class="btn btn-gold" onclick="saveSetting('poster_url','cp-poster','st-poster')">💾 Save Poster</button>
+            <div class="cp-status" id="st-poster"></div>
           </div>
 
           <!-- 2. Countdown Timer -->
           <div class="cp-card">
             <div class="cp-title">⏱️ Countdown Timer</div>
-            <p class="cp-desc">
-              Landing Page पर दिखने वाला countdown timer set करें।<br>
-              वह date/time चुनें जब registration बंद होगा।
-            </p>
+            <p class="cp-desc">Registration बंद होने की date और time set करें।</p>
             <div class="cp-field">
-              <label class="cp-label">Timer End Date & Time</label>
-              <input
-                type="datetime-local"
-                class="cp-input"
-                id="cp-countdown"
-              />
+              <label class="cp-lbl">Timer End Date & Time</label>
+              <input type="datetime-local" class="cp-inp" id="cp-countdown" />
             </div>
-            <button class="btn-icon btn-gold" onclick="saveCountdown()">
-              💾 Timer Save करें
-            </button>
-            <div class="save-status" id="countdown-status"></div>
+            <button class="btn btn-gold" onclick="saveCountdown()">💾 Save Timer</button>
+            <div class="cp-status" id="st-countdown"></div>
           </div>
 
-          <!-- 3. Registration Counter -->
+          <!-- 3. Total Seats -->
           <div class="cp-card">
-            <div class="cp-title">🔢 Registration Counter</div>
-            <p class="cp-desc">
-              Landing Page पर "आज रजिस्टर किए" वाला counter manually set करें।<br>
-              यह actual submissions + base number होगा।
-            </p>
+            <div class="cp-title">💺 Seat Settings</div>
+            <p class="cp-desc">Landing page पर दिखने वाली total seats set करें। Seats Left auto-calculate होगा।</p>
             <div class="cp-field">
-              <label class="cp-label">Counter Base Value (आज का starting number)</label>
-              <input
-                type="number"
-                class="cp-input"
-                id="cp-reg-count"
-                placeholder="जैसे: 24"
-                min="0"
-                max="9999"
-              />
+              <label class="cp-lbl">Total Seats Available</label>
+              <input type="number" class="cp-inp" id="cp-seats" placeholder="50" min="1" max="9999" />
             </div>
-            <button class="btn-icon btn-gold" onclick="saveSetting('regCount', 'cp-reg-count', 'counter-status')">
-              💾 Counter Save करें
-            </button>
-            <div class="save-status" id="counter-status"></div>
+            <button class="btn btn-gold" onclick="saveSetting('total_seats','cp-seats','st-seats')">💾 Save Seats</button>
+            <div class="cp-status" id="st-seats"></div>
           </div>
 
           <!-- 4. WhatsApp Number -->
           <div class="cp-card">
             <div class="cp-title">💬 WhatsApp Number</div>
-            <p class="cp-desc">
-              Registration के बाद user को जिस WhatsApp number पर redirect करें।<br>
-              Country code के साथ डालें (91XXXXXXXXXX)
-            </p>
+            <p class="cp-desc">Registration के बाद redirect होने वाला WhatsApp number। Country code सहित।</p>
             <div class="cp-field">
-              <label class="cp-label">WhatsApp Number (Country Code + Number)</label>
-              <input
-                type="text"
-                class="cp-input"
-                id="cp-wa-number"
-                placeholder="919876543210"
-                maxlength="15"
-                inputmode="numeric"
-              />
+              <label class="cp-lbl">Number (91XXXXXXXXXX)</label>
+              <input class="cp-inp" id="cp-wa" placeholder="919876543210" maxlength="15" inputmode="numeric" />
             </div>
-            <button class="btn-icon btn-gold" onclick="saveSetting('waNumber', 'cp-wa-number', 'wa-status')">
-              💾 Number Save करें
-            </button>
-            <div class="save-status" id="wa-status"></div>
+            <button class="btn btn-gold" onclick="saveSetting('wa_number','cp-wa','st-wa')">💾 Save Number</button>
+            <div class="cp-status" id="st-wa"></div>
           </div>
 
         </div>
@@ -613,354 +421,304 @@
   </div><!-- /main -->
 </div><!-- /layout -->
 
-<!-- TOAST AREA -->
 <div class="toast-area" id="toast-area"></div>
 
-<!-- ════════════════════════════════
+<!-- ═══════════════════════════════════════════
      DASHBOARD SCRIPT
-════════════════════════════════ -->
+═══════════════════════════════════════════ -->
 <script>
-/* ══════════════════════════════════════
-   DASHBOARD STATE
-══════════════════════════════════════ */
+'use strict';
+
+/* ── STATE ── */
 const DB = {
-  gasUrl:       localStorage.getItem('ipro_gas_url') || '',
-  allLeads:     [],
-  filtered:     [],
-  page:         1,
-  pageSize:     20,
-  todayStr:     new Date().toLocaleDateString('en-IN'),
+  url:        localStorage.getItem('ipro_sb_url')  || '',
+  key:        localStorage.getItem('ipro_sb_key')  || '',
+  sb:         null,
+  allLeads:   [],
+  filtered:   [],
+  page:       1,
+  pageSize:   25,
+  today:      new Date().toLocaleDateString('en-IN'),
 };
 
-/* ── On load ── */
+/* ── INIT ── */
 window.addEventListener('DOMContentLoaded', () => {
-  // Pre-fill saved URL
-  const urlInput = document.getElementById('gas-url-input');
-  if (DB.gasUrl) {
-    urlInput.value = DB.gasUrl;
-    document.getElementById('setup-card').style.opacity = '0.5';
+  // Pre-fill saved creds
+  if (DB.url) document.getElementById('cfg-url').value = DB.url;
+  if (DB.key) document.getElementById('cfg-key').value = DB.key;
+
+  if (DB.url && DB.key) {
+    connectSupabase(DB.url, DB.key);
+    loadAll();
+    loadSettings();
+    document.getElementById('setup-card').style.opacity = '.4';
+  }
+
+  // Set min date for countdown
+  const cdInp = document.getElementById('cp-countdown');
+  if (cdInp) cdInp.min = new Date().toISOString().slice(0,16);
+});
+
+/* ── SUPABASE CONNECT ── */
+function connectSupabase(url, key) {
+  try {
+    DB.sb = supabase.createClient(url, key);
+    return true;
+  } catch(e) {
+    toast('❌ Connection failed: ' + e.message, 'err');
+    return false;
+  }
+}
+
+function saveSupabaseConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  if (!url.startsWith('https://') || !key) {
+    toast('❌ Valid URL और Anon Key डालें', 'err'); return;
+  }
+  DB.url = url; DB.key = key;
+  localStorage.setItem('ipro_sb_url', url);
+  localStorage.setItem('ipro_sb_key', key);
+  if (connectSupabase(url, key)) {
+    toast('✅ Supabase connected! Data load हो रहा है...', 'ok');
+    document.getElementById('setup-card').style.opacity = '.4';
     loadAll();
     loadSettings();
   }
-
-  // Set countdown min to now
-  const cdInput = document.getElementById('cp-countdown');
-  if (cdInput) cdInput.min = new Date().toISOString().slice(0,16);
-});
-
-/* ══════════════════════════════════════
-   URL SETUP
-══════════════════════════════════════ */
-function saveGasUrl() {
-  const val = document.getElementById('gas-url-input').value.trim();
-  if (!val || !val.startsWith('https://script.google.com')) {
-    toast('❌ Valid Google Apps Script URL डालें', 'err');
-    return;
-  }
-  DB.gasUrl = val;
-  localStorage.setItem('ipro_gas_url', val);
-  document.getElementById('setup-card').style.opacity = '0.5';
-  toast('✅ URL save हो गया! Data load हो रहा है...', 'ok');
-  loadAll();
-  loadSettings();
 }
 
-/* ══════════════════════════════════════
-   PANEL NAVIGATION
-══════════════════════════════════════ */
+/* Auto-fill from script.js CFG values (reads localStorage key) */
+function copyFromScript() {
+  const url = localStorage.getItem('ipro_sb_url') || '';
+  const key = localStorage.getItem('ipro_sb_key') || '';
+  if (url) document.getElementById('cfg-url').value = url;
+  if (key) document.getElementById('cfg-key').value = key;
+}
+
+/* ── PANEL NAV ── */
 function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
-
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  const titles = { leads: '📋 Lead Dashboard', settings: '⚙️ Admin Settings' };
-  document.getElementById('topbar-title').textContent = titles[id] || '📋 Dashboard';
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const titles = { leads:'📋 Lead Dashboard', settings:'⚙️ Admin Settings' };
+  document.getElementById('tb-title').textContent = titles[id] || '📋 Dashboard';
 }
 
-/* ══════════════════════════════════════
-   LOAD ALL DATA
-══════════════════════════════════════ */
+/* ── LOAD ALL LEADS ── */
 async function loadAll() {
-  if (!DB.gasUrl) return;
+  if (!DB.sb) return;
   showLoading();
   try {
-    const url = `${DB.gasUrl}?action=getLeads&t=${Date.now()}`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const { data, error } = await DB.sb
+      .from('leads')
+      .select('id,name,phone,city,created_at')
+      .order('created_at', { ascending: false });
 
-    if (data.status === 'success') {
-      DB.allLeads = data.leads || [];
-    } else {
-      throw new Error(data.message || 'Unknown error');
-    }
+    if (error) throw error;
+    DB.allLeads = (data || []).map(r => ({
+      ...r,
+      dateStr: new Date(r.created_at).toLocaleDateString('en-IN'),
+      timeStr: new Date(r.created_at).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true }),
+    }));
   } catch(e) {
-    toast('⚠️ Data load नहीं हुआ: ' + e.message, 'err');
+    toast('⚠️ Leads load failed: ' + e.message, 'err');
     DB.allLeads = [];
   }
-
   DB.filtered = [...DB.allLeads];
   DB.page = 1;
   updateStats();
   renderTable();
 }
 
-/* ══════════════════════════════════════
-   LOAD SETTINGS (for control panel)
-══════════════════════════════════════ */
+/* ── LOAD SETTINGS ── */
 async function loadSettings() {
-  if (!DB.gasUrl) return;
+  if (!DB.sb) return;
   try {
-    const res = await fetch(`${DB.gasUrl}?action=getSettings&t=${Date.now()}`);
-    const data = await res.json();
-    if (data.status === 'success' && data.settings) {
-      const s = data.settings;
+    const { data, error } = await DB.sb.from('settings').select('key,value');
+    if (error) throw error;
+    const map = {};
+    (data||[]).forEach(r => map[r.key] = r.value);
 
-      // Pre-fill settings form
-      if (s.posterUrl)   document.getElementById('cp-poster-url').value  = s.posterUrl;
-      if (s.regCount)    document.getElementById('cp-reg-count').value    = s.regCount;
-      if (s.waNumber)    document.getElementById('cp-wa-number').value    = s.waNumber;
-      if (s.countdownISO) {
-        const dt = new Date(s.countdownISO);
-        if (!isNaN(dt)) {
-          document.getElementById('cp-countdown').value = dt.toISOString().slice(0,16);
-        }
-      }
-
-      // Show poster preview if URL exists
-      if (s.posterUrl) previewPoster(s.posterUrl);
+    if (map.poster_url)    document.getElementById('cp-poster').value    = map.poster_url;
+    if (map.total_seats)   document.getElementById('cp-seats').value     = map.total_seats;
+    if (map.wa_number)     document.getElementById('cp-wa').value        = map.wa_number;
+    if (map.countdown_iso) {
+      const d = new Date(map.countdown_iso);
+      if (!isNaN(d)) document.getElementById('cp-countdown').value = d.toISOString().slice(0,16);
     }
-  } catch(e) {
-    console.warn('Settings load failed:', e);
-  }
+
+    // Show poster preview
+    if (map.poster_url) previewPoster(map.poster_url);
+
+  } catch(e) { console.warn('Settings load:', e); }
 }
 
-/* ══════════════════════════════════════
-   STATS
-══════════════════════════════════════ */
+/* ── STATS ── */
 function updateStats() {
   const leads  = DB.allLeads;
-  const today  = DB.todayStr;
+  const todayStr = new Date().toLocaleDateString('en-IN');
+  const weekAgo  = new Date(Date.now() - 7*86400000);
 
-  const weekAgo = new Date(Date.now() - 7 * 86400000);
-  const todayLeads = leads.filter(l => l.date === today).length;
+  const todayLeads = leads.filter(l => l.dateStr === todayStr).length;
   const cities     = new Set(leads.map(l => l.city)).size;
-  const weekLeads  = leads.filter(l => {
-    const parts = (l.date || '').split('/');
-    if (parts.length < 3) return false;
-    const d = new Date(`${parts[1]}/${parts[0]}/${parts[2]}`);
-    return d >= weekAgo;
-  }).length;
+  const weekLeads  = leads.filter(l => new Date(l.created_at) >= weekAgo).length;
 
-  setEl('s-total',  leads.length);
-  setEl('s-today',  todayLeads);
-  setEl('s-cities', cities);
-  setEl('s-week',   weekLeads);
+  setText('s-total',  leads.length);
+  setText('s-today',  todayLeads);
+  setText('s-cities', cities);
+  setText('s-week',   weekLeads);
 }
 
-/* ══════════════════════════════════════
-   TABLE RENDER + FILTER + PAGINATION
-══════════════════════════════════════ */
+/* ── TABLE FILTER + RENDER ── */
 function filterTable() {
   const q = (document.getElementById('search-box')?.value || '').toLowerCase().trim();
   DB.filtered = q
     ? DB.allLeads.filter(l =>
-        (l.name   || '').toLowerCase().includes(q) ||
-        (l.mobile || '').includes(q) ||
-        (l.city   || '').toLowerCase().includes(q)
-      )
+        (l.name  ||'').toLowerCase().includes(q) ||
+        (l.phone ||'').includes(q) ||
+        (l.city  ||'').toLowerCase().includes(q))
     : [...DB.allLeads];
   DB.page = 1;
   renderTable();
 }
 
 function renderTable() {
-  const total = DB.filtered.length;
-  const pages = Math.ceil(total / DB.pageSize) || 1;
-  const start = (DB.page - 1) * DB.pageSize;
-  const end   = Math.min(start + DB.pageSize, total);
-  const slice = DB.filtered.slice(start, end);
-  const today = DB.todayStr;
+  const total  = DB.filtered.length;
+  const pages  = Math.max(1, Math.ceil(total / DB.pageSize));
+  const start  = (DB.page - 1) * DB.pageSize;
+  const end    = Math.min(start + DB.pageSize, total);
+  const slice  = DB.filtered.slice(start, end);
+  const todayStr = new Date().toLocaleDateString('en-IN');
 
-  if (total === 0) {
-    document.getElementById('tbl-body').innerHTML =
-      `<div class="tbl-empty">कोई lead नहीं मिली</div>`;
-    document.getElementById('pagination').style.display = 'none';
+  if (!total) {
+    document.getElementById('tbl-body').innerHTML = '<div class="tbl-empty">कोई lead नहीं मिली</div>';
+    document.getElementById('pg-wrap').style.display = 'none';
     return;
   }
 
-  const rows = slice.map((l, i) => `
+  const rows = slice.map((l,i) => `
     <tr>
-      <td style="color:var(--text3);font-size:0.72rem;">${start + i + 1}</td>
+      <td style="color:var(--t3);font-size:.7rem">${start+i+1}</td>
       <td class="td-name">${esc(l.name)}</td>
-      <td class="td-mobile">${esc(l.mobile)}</td>
-      <td><span class="td-city">${esc(l.city)}</span></td>
-      <td>
-        <span class="${l.date === today ? 'badge-today' : 'badge-old'}">${esc(l.date)}</span>
-      </td>
-      <td style="color:var(--text3);font-size:0.78rem;">${esc(l.time)}</td>
-    </tr>
-  `).join('');
+      <td class="td-phone">${esc(l.phone)}</td>
+      <td><span class="city-chip">${esc(l.city)}</span></td>
+      <td><span class="${l.dateStr===todayStr?'b-today':'b-old'}">${esc(l.dateStr)}</span></td>
+      <td style="color:var(--t3);font-size:.76rem">${esc(l.timeStr)}</td>
+    </tr>`).join('');
 
   document.getElementById('tbl-body').innerHTML = `
     <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>नाम</th>
-          <th>मोबाइल</th>
-          <th>शहर</th>
-          <th>तारीख</th>
-          <th>समय</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>#</th><th>नाम</th><th>मोबाइल</th><th>शहर</th><th>तारीख</th><th>समय</th>
+      </tr></thead>
       <tbody>${rows}</tbody>
-    </table>
-  `;
+    </table>`;
 
-  // Pagination
-  const pgEl = document.getElementById('pagination');
-  pgEl.style.display = 'flex';
-  document.getElementById('pg-info').textContent =
-    `${start + 1}–${end} of ${total} leads`;
+  const pgWrap = document.getElementById('pg-wrap');
+  pgWrap.style.display = 'flex';
+  document.getElementById('pg-info').textContent = `${start+1}–${end} of ${total} leads`;
 
   const pgBtns = document.getElementById('pg-btns');
   pgBtns.innerHTML = '';
-
-  const mkBtn = (label, page, disabled = false, active = false) => {
+  const mk = (lbl, pg, dis=false, act=false) => {
     const b = document.createElement('button');
-    b.className = 'pg-btn' + (active ? ' active' : '');
-    b.textContent = label;
-    b.disabled = disabled;
-    b.onclick = () => { DB.page = page; renderTable(); };
+    b.className = 'pgb' + (act?' active':'');
+    b.textContent = lbl; b.disabled = dis;
+    b.onclick = () => { DB.page = pg; renderTable(); };
     pgBtns.appendChild(b);
   };
-
-  mkBtn('←', DB.page - 1, DB.page === 1);
-  const startP = Math.max(1, DB.page - 2);
-  const endP   = Math.min(pages, DB.page + 2);
-  for (let p = startP; p <= endP; p++) mkBtn(p, p, false, p === DB.page);
-  mkBtn('→', DB.page + 1, DB.page === pages);
+  mk('←', DB.page-1, DB.page===1);
+  for (let p=Math.max(1,DB.page-2); p<=Math.min(pages,DB.page+2); p++) mk(p,p,false,p===DB.page);
+  mk('→', DB.page+1, DB.page===pages);
 }
 
 function showLoading() {
-  document.getElementById('tbl-body').innerHTML =
-    `<div class="tbl-loading"><div class="spinner"></div><p>Data load हो रहा है...</p></div>`;
-  document.getElementById('pagination').style.display = 'none';
+  document.getElementById('tbl-body').innerHTML = '<div class="tbl-loading"><div class="spinner"></div><p>Data load हो रहा है...</p></div>';
+  document.getElementById('pg-wrap').style.display = 'none';
 }
 
-/* ══════════════════════════════════════
-   CSV EXPORT
-══════════════════════════════════════ */
+/* ── CSV EXPORT ── */
 function exportCSV() {
-  if (!DB.allLeads.length) { toast('⚠️ कोई data नहीं — पहले load करें', 'err'); return; }
-
-  const headers = ['#', 'Name', 'Mobile', 'City', 'Date', 'Time'];
-  const rows = DB.allLeads.map((l, i) => [
-    i + 1,
-    `"${(l.name   || '').replace(/"/g, '""')}"`,
-    `"${(l.mobile || '').replace(/"/g, '""')}"`,
-    `"${(l.city   || '').replace(/"/g, '""')}"`,
-    `"${(l.date   || '').replace(/"/g, '""')}"`,
-    `"${(l.time   || '').replace(/"/g, '""')}"`,
+  if (!DB.allLeads.length) { toast('⚠️ कोई data नहीं', 'err'); return; }
+  const headers = ['#','Name','Mobile','City','Date','Time'];
+  const rows = DB.allLeads.map((l,i) => [
+    i+1,
+    `"${(l.name||'').replace(/"/g,'""')}"`,
+    `"${(l.phone||'').replace(/"/g,'""')}"`,
+    `"${(l.city||'').replace(/"/g,'""')}"`,
+    `"${(l.dateStr||'').replace(/"/g,'""')}"`,
+    `"${(l.timeStr||'').replace(/"/g,'""')}"`,
   ].join(','));
-
-  const csv  = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const csv  = '\uFEFF'+[headers.join(','),...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `leads_${DB.todayStr.replace(/\//g, '-')}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('✅ CSV export हो गई!', 'ok');
+  a.href=url; a.download=`leads_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('✅ CSV export हो गई!','ok');
 }
 
-/* ══════════════════════════════════════
-   CONTROL PANEL — SAVE SETTINGS
-══════════════════════════════════════ */
-
-/* Generic key-value setting save */
+/* ── SETTINGS SAVE ── */
 async function saveSetting(key, inputId, statusId) {
-  const val = (document.getElementById(inputId)?.value || '').trim();
-  if (!val) { showStatus(statusId, '⚠️ Value खाली है', false); return; }
-  await postSetting(key, val, statusId);
+  const val = (document.getElementById(inputId)?.value||'').trim();
+  if (!val) { showStatus(statusId,'⚠️ Value खाली है',false); return; }
+  await upsertSetting(key, val, statusId);
 }
 
-/* Save countdown (converts datetime-local to ISO) */
 async function saveCountdown() {
   const val = document.getElementById('cp-countdown')?.value;
-  if (!val) { showStatus('countdown-status', '⚠️ Date/Time चुनें', false); return; }
-  const iso = new Date(val).toISOString();
-  await postSetting('countdownISO', iso, 'countdown-status');
+  if (!val) { showStatus('st-countdown','⚠️ Date/Time चुनें',false); return; }
+  await upsertSetting('countdown_iso', new Date(val).toISOString(), 'st-countdown');
 }
 
-/* POST setting to GAS */
-async function postSetting(key, value, statusId) {
-  if (!DB.gasUrl) {
-    showStatus(statusId, '⚠️ Apps Script URL नहीं है', false);
-    return;
-  }
-
-  showStatus(statusId, '⏳ Save हो रहा है...', null);
-
+async function upsertSetting(key, value, statusId) {
+  if (!DB.sb) { showStatus(statusId,'⚠️ Supabase connected नहीं है',false); return; }
+  showStatus(statusId,'⏳ Saving...', null);
   try {
-    await fetch(DB.gasUrl, {
-      method:  'POST',
-      mode:    'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ action: 'saveSetting', key, value }),
-    });
-    // no-cors → can't read response, assume success
-    showStatus(statusId, '✅ Save हो गया! Landing page पर दिखेगा।', true);
-    toast(`✅ ${key} updated!`, 'ok');
+    const { error } = await DB.sb
+      .from('settings')
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (error) throw error;
+    showStatus(statusId,'✅ Saved! Landing page पर दिखेगा।', true);
+    toast('✅ ' + key + ' updated!','ok');
   } catch(e) {
-    showStatus(statusId, '❌ Save नहीं हुआ: ' + e.message, false);
+    showStatus(statusId,'❌ Error: '+e.message, false);
   }
 }
 
 /* Poster preview */
 function previewPoster(url) {
-  const img = document.getElementById('poster-preview-img');
-  const ph  = document.getElementById('poster-preview-ph');
-  if (!img || !url) return;
-  img.onload  = () => { img.style.display = 'block'; if(ph) ph.style.display = 'none'; };
-  img.onerror = () => { img.style.display = 'none';  if(ph) ph.style.display = 'block'; };
+  const img = document.getElementById('cp-preview-img');
+  const ph  = document.getElementById('cp-preview-ph');
+  if (!img||!url) return;
+  img.onload  = () => { img.style.display='block'; if(ph) ph.style.display='none'; };
+  img.onerror = () => { img.style.display='none';  if(ph) ph.style.display='block'; };
   img.src = url;
 }
 
-function showStatus(id, msg, ok) {
+/* ── HELPERS ── */
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function showStatus(id,msg,ok) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.textContent = msg;
-  el.className   = 'save-status ' + (ok === true ? 'ok' : ok === false ? 'err' : '');
-  el.style.display = 'block';
+  el.textContent=msg;
+  el.className='cp-status '+(ok===true?'ok':ok===false?'err':'');
 }
 
-/* ══════════════════════════════════════
-   HELPERS
-══════════════════════════════════════ */
-function setEl(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function toast(msg, type = 'ok') {
-  const area = document.getElementById('toast-area');
-  if (!area) return;
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.textContent = msg;
+function toast(msg,type='ok') {
+  const area=document.getElementById('toast-area');
+  if(!area) return;
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.textContent=msg;
   area.appendChild(el);
-  setTimeout(() => {
-    el.style.transition = 'opacity 0.35s, transform 0.35s';
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(16px)';
-    setTimeout(() => el.remove(), 350);
-  }, 3500);
+  setTimeout(()=>{
+    el.style.transition='opacity .35s,transform .35s';
+    el.style.opacity='0';el.style.transform='translateX(14px)';
+    setTimeout(()=>el.remove(),350);
+  },3500);
 }
 </script>
 </body>
