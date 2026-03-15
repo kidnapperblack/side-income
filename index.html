@@ -3,333 +3,245 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>पार्ट टाइम इनकम – मोबाइल से शुरू करें</title>
-  <meta name="description" content="मोबाइल से पार्ट टाइम इनकम शुरू करें। आज ही रजिस्टर करें और हमारी टीम से जुड़ें।" />
+  <title>पार्ट टाइम इनकम — मोबाइल से शुरू करें</title>
+  <meta name="description" content="घर बैठे मोबाइल से पार्ट टाइम इनकम शुरू करें। आज ही Free रजिस्ट्रेशन करें।" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 </head>
 <body>
 
-<!-- ── BG ORBS ── -->
-<div class="bg-orb bg-orb-1"></div>
-<div class="bg-orb bg-orb-2"></div>
-<div class="bg-orb bg-orb-3"></div>
+<!-- ════════════════════════════════════════════
+     BACKGROUND LAYERS (purely decorative)
+════════════════════════════════════════════ -->
+<div class="bg-mesh" aria-hidden="true"></div>
+<div class="bg-grid" aria-hidden="true"></div>
 
-<!-- ════════════════════════════════
-     NAVBAR
-════════════════════════════════ -->
-<nav class="navbar" id="navbar">
-  <div class="container">
-    <div class="nav-logo">Income<span>Pro</span></div>
-    <a href="#register" class="nav-cta">अभी रजिस्टर करें</a>
-  </div>
-</nav>
+<!-- ════════════════════════════════════════════
+     PAGE LOADER
+     Shown while settings are fetched from GAS
+════════════════════════════════════════════ -->
+<div class="page-loader" id="page-loader">
+  <div class="loader-ring"></div>
+  <p class="loader-text">लोड हो रहा है...</p>
+</div>
 
-<!-- ════════════════════════════════
-     HERO
-════════════════════════════════ -->
-<section class="hero" id="home">
-  <div class="container">
-    <div class="hero-grid">
+<!-- ════════════════════════════════════════════
+     MAIN PAGE WRAPPER
+════════════════════════════════════════════ -->
+<div class="page-wrapper">
 
-      <!-- Left: Text -->
-      <div class="hero-content">
-        <div class="hero-badge reveal">🚀 सीमित सीटें उपलब्ध हैं</div>
+  <!-- ── HEADER ── -->
+  <header class="site-header" id="site-header">
+    <span class="logo">Income<span class="accent">Pro</span></span>
+    <span class="live-pill">
+      <span class="live-dot"></span>
+      Live Registration Open
+    </span>
+  </header>
+  <!-- NOTE: No dashboard/admin link here — intentionally omitted for security -->
 
-        <h1 class="hero-title reveal reveal-delay-1">
-          मोबाइल से <span class="highlight">पार्ट टाइम इनकम</span> शुरू करने का मौका
-        </h1>
+  <!-- ════════════════════════════════════
+       HERO — Everything above the fold
+       Poster | Counter | Timer | Form
+  ════════════════════════════════════ -->
+  <main class="hero" id="hero">
+    <div class="hero-inner">
 
-        <p class="hero-desc reveal reveal-delay-2">
-          घर बैठे अपने स्मार्टफोन से काम करें और हर महीने एक्स्ट्रा इनकम कमाएं। कोई अनुभव जरूरी नहीं — बस जोश और स्मार्टफोन चाहिए!
-        </p>
+      <!-- ══ LEFT: POSTER IMAGE ══ -->
+      <div class="poster-col">
+        <div class="poster-wrap">
+          <div class="poster-glow-ring" aria-hidden="true"></div>
+          <div class="poster-frame" id="poster-frame">
+            <!--
+              POSTER IMAGE is loaded dynamically via JS from settings.
+              Admin can update the poster URL from the dashboard.
+              Default shown below if no URL is set.
+            -->
+            <img
+              id="poster-img"
+              src=""
+              alt="Opportunity Poster"
+              style="display:none;"
+              onerror="this.style.display='none'; document.getElementById('poster-ph').style.display='flex';"
+            />
+            <div class="poster-placeholder" id="poster-ph">
+              <span class="ph-icon">🖼️</span>
+              <p>पोस्टर यहाँ दिखेगा<br><small>Dashboard से URL डालें</small></p>
+            </div>
 
-        <div class="hero-btns reveal reveal-delay-3">
-          <a href="#register" class="btn-primary">✨ अभी Free रजिस्टर करें</a>
-          <a href="#benefits" class="btn-secondary">और जानें →</a>
-        </div>
-      </div>
-
-      <!-- Right: Poster -->
-      <div class="hero-poster reveal reveal-delay-2">
-        <div class="poster-glow"></div>
-        <div class="poster-frame">
-          <!--
-            📸 POSTER IMAGE: Replace src below with your actual image URL
-            Recommended size: 800x1000px
-            <img src="your-poster-image.jpg" alt="Opportunity Poster" />
-          -->
-          <div class="poster-placeholder">
-            <span class="icon">📸</span>
-            <p>यहाँ अपना पोस्टर/बैनर लगाएं<br><small>img src="your-image.jpg" से बदलें</small></p>
+            <!-- Stats overlay at bottom of poster -->
+            <div class="poster-stats" aria-label="Statistics">
+              <div class="ps-item">
+                <div class="ps-num">5000+</div>
+                <div class="ps-lbl">मेंबर</div>
+              </div>
+              <div class="ps-item">
+                <div class="ps-num">₹50K+</div>
+                <div class="ps-lbl">कमाई</div>
+              </div>
+              <div class="ps-item">
+                <div class="ps-num">3 साल</div>
+                <div class="ps-lbl">भरोसा</div>
+              </div>
+            </div>
           </div>
-
-          <div class="poster-badge">🔥 FREE JOIN</div>
-
-          <div class="poster-stats">
-            <div class="poster-stat">
-              <div class="num">5000+</div>
-              <div class="lbl">एक्टिव मेंबर</div>
-            </div>
-            <div class="poster-stat">
-              <div class="num">₹50K+</div>
-              <div class="lbl">मासिक कमाई</div>
-            </div>
-            <div class="poster-stat">
-              <div class="num">3 साल</div>
-              <div class="lbl">भरोसेमंद</div>
-            </div>
-          </div>
         </div>
-      </div>
+      </div><!-- /poster-col -->
 
-    </div>
-  </div>
-</section>
+      <!-- ══ RIGHT: FORM PANEL ══ -->
+      <div class="form-col">
 
-<!-- ════════════════════════════════
-     STATS BAR
-════════════════════════════════ -->
-<section class="stats-bar" id="stats-bar">
-  <div class="container">
-    <div class="stats-grid">
-      <div class="stat-item reveal">
-        <div class="stat-num" id="stat1">0+</div>
-        <div class="stat-lbl">एक्टिव मेंबर</div>
-      </div>
-      <div class="stat-item reveal reveal-delay-1">
-        <div class="stat-num" id="stat2">0%</div>
-        <div class="stat-lbl">संतुष्टि दर</div>
-      </div>
-      <div class="stat-item reveal reveal-delay-2">
-        <div class="stat-num" id="stat3">0</div>
-        <div class="stat-lbl">साल का अनुभव</div>
-      </div>
-      <div class="stat-item reveal reveal-delay-3">
-        <div class="stat-num" id="stat4">0+</div>
-        <div class="stat-lbl">शहरों में मौजूद</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ════════════════════════════════
-     BENEFITS
-════════════════════════════════ -->
-<section class="benefits" id="benefits">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-tag reveal">✦ फायदे</div>
-      <h2 class="section-title reveal reveal-delay-1">क्यों जुड़ें हमारे साथ?</h2>
-      <p class="section-desc reveal reveal-delay-2">जानिए वो 4 बड़े कारण जो इसे सबसे खास बनाते हैं</p>
-    </div>
-
-    <div class="benefits-grid">
-
-      <div class="benefit-card reveal">
-        <div class="benefit-icon">📱</div>
-        <h3 class="benefit-title">Mobile से काम</h3>
-        <p class="benefit-desc">बस एक स्मार्टफोन और इंटरनेट कनेक्शन — कहीं से भी, कभी भी काम करें। कोई ऑफिस या लैपटॉप की जरूरत नहीं।</p>
-      </div>
-
-      <div class="benefit-card reveal reveal-delay-1">
-        <div class="benefit-icon">💰</div>
-        <h3 class="benefit-title">Part Time Income</h3>
-        <p class="benefit-desc">अपनी नौकरी या पढ़ाई के साथ-साथ रोजाना 2-3 घंटे काम करके महीने में ₹15,000 – ₹50,000+ कमाएं।</p>
-      </div>
-
-      <div class="benefit-card reveal reveal-delay-2">
-        <div class="benefit-icon">🎓</div>
-        <h3 class="benefit-title">Training Support</h3>
-        <p class="benefit-desc">जुड़ते ही पूरी ट्रेनिंग दी जाएगी। हमारे एक्सपर्ट मेंटर 24/7 आपकी मदद के लिए तैयार हैं।</p>
-      </div>
-
-      <div class="benefit-card reveal reveal-delay-3">
-        <div class="benefit-icon">🚀</div>
-        <h3 class="benefit-title">Easy to Start</h3>
-        <p class="benefit-desc">कोई अनुभव नहीं? कोई बात नहीं! एकदम शुरुआत से सीखें और पहले हफ्ते से ही कमाई शुरू करें।</p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ════════════════════════════════
-     LIVE COUNTER
-════════════════════════════════ -->
-<section class="counter-section" id="counter-section">
-  <div class="container">
-    <div class="counter-inner">
-      <div>
-        <div class="section-tag" style="text-align:center;display:block;margin-bottom:8px;">📊 LIVE</div>
-        <p style="font-family:var(--font-hindi);color:var(--muted);font-size:1rem;text-align:center;">आज रजिस्टर करने वाले लोग</p>
-      </div>
-      <div class="counter-box">
-        <div class="counter-num" id="reg-counter">0</div>
-        <div class="counter-label">Today's Registrations</div>
-      </div>
-      <div style="text-align:center;">
-        <p style="font-family:var(--font-hindi);color:var(--muted);font-size:0.9rem;margin-bottom:8px;">सीटें भर रही हैं!</p>
-        <div style="width:180px;height:8px;background:rgba(255,255,255,0.1);border-radius:50px;overflow:hidden;">
-          <div style="height:100%;width:62%;background:linear-gradient(90deg,var(--neon),var(--gold));border-radius:50px;animation:widthPulse 2s ease-in-out infinite;"></div>
-        </div>
-        <p style="font-size:0.75rem;color:var(--muted);margin-top:6px;font-family:var(--font-display);">62% seats filled</p>
-      </div>
-    </div>
-  </div>
-</section>
-<style>
-@keyframes widthPulse {
-  0%,100%{opacity:1} 50%{opacity:0.6}
-}
-</style>
-
-<!-- ════════════════════════════════
-     COUNTDOWN
-════════════════════════════════ -->
-<section class="countdown-section">
-  <div class="container">
-    <div class="section-header">
-      <p class="countdown-label reveal">
-        ⏰ <span>रजिस्ट्रेशन बंद होने में समय बचा है</span>
-      </p>
-    </div>
-
-    <div id="timer-wrap" class="countdown-timer reveal reveal-delay-1">
-      <div class="time-block">
-        <div class="time-num" id="timer-h">00</div>
-        <div class="time-lbl">घंटे</div>
-      </div>
-      <div class="time-colon">:</div>
-      <div class="time-block">
-        <div class="time-num" id="timer-m">00</div>
-        <div class="time-lbl">मिनट</div>
-      </div>
-      <div class="time-colon">:</div>
-      <div class="time-block">
-        <div class="time-num" id="timer-s">00</div>
-        <div class="time-lbl">सेकंड</div>
-      </div>
-    </div>
-
-    <div id="timer-expired" class="timer-expired" style="display:none;">
-      ⛔ आज का रजिस्ट्रेशन बंद हो चुका है
-    </div>
-
-    <div style="text-align:center;margin-top:32px;">
-      <a href="#register" class="btn-primary reveal reveal-delay-2">⚡ अभी रजिस्टर करें — FREE</a>
-    </div>
-  </div>
-</section>
-
-<!-- ════════════════════════════════
-     GALLERY
-════════════════════════════════ -->
-<section class="gallery-section" id="gallery">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-tag reveal">📸 गैलरी</div>
-      <h2 class="section-title reveal reveal-delay-1">हमारे साथ की यादें</h2>
-      <p class="section-desc reveal reveal-delay-2">मीटिंग, इवेंट, सक्सेस मोमेंट्स और हमारी कम्युनिटी</p>
-    </div>
-
-    <div class="gallery-filter reveal">
-      <button class="filter-btn active" data-filter="all">सभी</button>
-      <button class="filter-btn" data-filter="meeting">मीटिंग</button>
-      <button class="filter-btn" data-filter="event">इवेंट</button>
-      <button class="filter-btn" data-filter="success">सफलता</button>
-      <button class="filter-btn" data-filter="community">कम्युनिटी</button>
-    </div>
-
-    <div class="gallery-grid" id="gallery-grid">
-      <!-- Rendered by JS -->
-    </div>
-
-    <p style="text-align:center;color:var(--muted);font-family:var(--font-hindi);font-size:0.85rem;margin-top:24px;">
-      💡 अपनी फ़ोटो जोड़ने के लिए gallery-grid में img tags जोड़ें
-    </p>
-  </div>
-</section>
-
-<!-- ════════════════════════════════
-     REGISTRATION FORM
-════════════════════════════════ -->
-<section class="form-section" id="register">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-tag reveal">📝 रजिस्ट्रेशन</div>
-      <h2 class="section-title reveal reveal-delay-1">आज ही जुड़ें — बिल्कुल FREE</h2>
-      <p class="section-desc reveal reveal-delay-2">नीचे फॉर्म भरें और हमारी टीम 24 घंटे में आपसे संपर्क करेगी</p>
-    </div>
-
-    <div class="form-wrapper">
-      <div class="form-card reveal">
-
-        <!-- Form -->
-        <div id="form-card-inner">
-          <form id="lead-form" novalidate>
-
-            <div class="form-group">
-              <input type="text" id="f-name" name="name" placeholder="आपका नाम" autocomplete="name" />
-              <label for="f-name">आपका पूरा नाम</label>
-            </div>
-
-            <div class="form-group">
-              <input type="tel" id="f-mobile" name="mobile" placeholder="मोबाइल नंबर" maxlength="10" autocomplete="tel" />
-              <label for="f-mobile">मोबाइल नंबर (10 अंक)</label>
-            </div>
-
-            <div class="form-group">
-              <input type="text" id="f-city" name="city" placeholder="आपका शहर" autocomplete="address-level2" />
-              <label for="f-city">आपका शहर / जिला</label>
-            </div>
-
-            <button type="submit" class="btn-submit" id="submit-btn">
-              🚀 Free रजिस्ट्रेशन करें
-            </button>
-
-          </form>
-
-          <p class="form-note">🔒 आपकी जानकारी 100% सुरक्षित है। कोई स्पैम नहीं।</p>
-        </div>
-
-        <!-- Thank You Box -->
-        <div id="thankyou-box" class="thankyou-box">
-          <div class="ty-icon">🎉</div>
-          <h3 class="thankyou-title">धन्यवाद! रजिस्ट्रेशन सफल रहा!</h3>
-          <p class="thankyou-desc">
-            आपकी जानकारी हमें मिल गई है।<br>
-            हमारी टीम जल्द ही आपसे संपर्क करेगी।
+        <!-- Headline -->
+        <div class="headline-block">
+          <div class="eyebrow">🚀 सीमित सीटें बची हैं</div>
+          <h1 class="headline">
+            मोबाइल से <span class="hl">पार्ट टाइम इनकम</span> शुरू करने का मौका
+          </h1>
+          <p class="subline">
+            घर बैठे स्मार्टफोन से रोज़ाना 2-3 घंटे काम करें और महीने में ₹15,000 – ₹50,000+ कमाएं।
           </p>
-          <a href="#" id="wa-link" class="btn-whatsapp" target="_blank" rel="noopener">
-            <span class="wa-icon">💬</span>
-            WhatsApp पर मैसेज करें
-          </a>
         </div>
 
-      </div>
-    </div>
-  </div>
-</section>
+        <!-- ── METRICS ROW: Counter + Countdown ── -->
+        <div class="metrics-row" id="metrics-row">
 
-<!-- ════════════════════════════════
-     FOOTER
-════════════════════════════════ -->
-<footer class="footer">
-  <div class="container">
-    <div class="footer-logo">Income<span style="color:var(--gold)">Pro</span></div>
-    <p class="footer-desc">मोबाइल से पार्ट टाइम इनकम का सबसे भरोसेमंद प्लेटफॉर्म</p>
-    <div class="footer-links">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Use</a>
-      <a href="#register">Register</a>
-      <a href="dashboard.html">Admin</a>
-    </div>
-    <p class="footer-copy">© 2024 IncomePro. All rights reserved. | Designed with ❤️</p>
-  </div>
-</footer>
+          <!-- Today's Registration Counter -->
+          <div class="metric-card c-green">
+            <div class="mc-lbl">आज रजिस्टर किए</div>
+            <!--
+              #reg-count is updated live:
+              1. Initial value loaded from GAS settings
+              2. Increases when a new user submits the form
+              3. Simulated random increments keep it dynamic
+            -->
+            <div class="mc-val" id="reg-count">—</div>
+          </div>
 
+          <!-- Countdown Timer -->
+          <div class="metric-card c-gold">
+            <div class="mc-lbl">रजिस्ट्रेशन बंद होने में</div>
+            <!--
+              Countdown target is fetched from GAS settings.
+              Admin can change it from the dashboard.
+            -->
+            <div class="cd-row mc-val" id="countdown-wrap">
+              <span id="cd-h">00</span>
+              <span class="cd-colon">:</span>
+              <span id="cd-m">00</span>
+              <span class="cd-colon">:</span>
+              <span id="cd-s">00</span>
+            </div>
+            <div class="cd-expired" id="cd-expired">⛔ आज बंद हो चुका है</div>
+            <div class="seats-row">
+              <div class="seats-bar"><div class="seats-fill" id="seats-fill" style="width:68%"></div></div>
+              <div class="seats-txt">68% seats filled today</div>
+            </div>
+          </div>
+
+        </div><!-- /metrics-row -->
+
+        <!-- ── LEAD CAPTURE FORM ── -->
+        <div class="form-card" id="form-card">
+
+          <!-- Form view -->
+          <div id="form-view">
+            <div class="form-heading">📝 Free रजिस्ट्रेशन करें</div>
+
+            <form id="lead-form" novalidate autocomplete="on">
+
+              <!-- Name Field -->
+              <div class="field" id="field-name">
+                <input
+                  type="text"
+                  id="f-name"
+                  name="name"
+                  placeholder="आपका नाम"
+                  autocomplete="name"
+                  maxlength="80"
+                  required
+                />
+                <label for="f-name">आपका पूरा नाम</label>
+                <span class="field-icon">👤</span>
+                <span class="field-err" id="err-name">नाम दर्ज करें</span>
+              </div>
+
+              <!-- Mobile Field -->
+              <div class="field" id="field-mobile">
+                <input
+                  type="tel"
+                  id="f-mobile"
+                  name="mobile"
+                  placeholder="मोबाइल नंबर"
+                  autocomplete="tel"
+                  maxlength="10"
+                  inputmode="numeric"
+                  pattern="[0-9]{10}"
+                  required
+                />
+                <label for="f-mobile">मोबाइल नंबर (10 अंक)</label>
+                <span class="field-icon">📱</span>
+                <span class="field-err" id="err-mobile">10 अंकों का मोबाइल नंबर डालें</span>
+              </div>
+
+              <!-- City Field -->
+              <div class="field" id="field-city">
+                <input
+                  type="text"
+                  id="f-city"
+                  name="city"
+                  placeholder="आपका शहर"
+                  autocomplete="address-level2"
+                  maxlength="60"
+                  required
+                />
+                <label for="f-city">आपका शहर / जिला</label>
+                <span class="field-icon">🏙️</span>
+                <span class="field-err" id="err-city">शहर दर्ज करें</span>
+              </div>
+
+              <!-- Submit -->
+              <button type="submit" class="btn-submit" id="submit-btn">
+                <span class="btn-text">🚀 Free रजिस्ट्रेशन करें</span>
+                <span class="btn-spinner"></span>
+              </button>
+
+            </form>
+
+            <div class="trust-row">
+              🔒 आपकी जानकारी 100% सुरक्षित &nbsp;|&nbsp; कोई शुल्क नहीं
+            </div>
+          </div>
+
+          <!-- Success view (shown after form submits) -->
+          <div id="success-view" class="success-panel">
+            <div class="success-icon">✅</div>
+            <h2 class="success-title">रजिस्ट्रेशन सफल!</h2>
+            <p class="success-desc">
+              धन्यवाद! हमारी टीम जल्द ही आपसे संपर्क करेगी।
+            </p>
+            <!-- WhatsApp link is built dynamically in script.js -->
+            <a href="#" id="wa-btn" class="btn-whatsapp" target="_blank" rel="noopener noreferrer">
+              💬 WhatsApp पर मैसेज करें
+            </a>
+          </div>
+
+        </div><!-- /form-card -->
+
+      </div><!-- /form-col -->
+
+    </div><!-- /hero-inner -->
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="site-footer">
+    <p class="footer-text">© 2024 IncomePro · सभी अधिकार सुरक्षित · यह एक Lead Generation Page है</p>
+  </footer>
+
+</div><!-- /page-wrapper -->
+
+<!-- ── TOAST CONTAINER ── -->
+<div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+
+<!-- ── SCRIPTS ── -->
 <script src="script.js"></script>
 </body>
 </html>
