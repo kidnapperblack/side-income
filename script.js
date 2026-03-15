@@ -1,343 +1,433 @@
-/* ===========================
-   PREMIUM LEAD PAGE - SCRIPT.JS
-   =========================== */
+/* ══════════════════════════════════════════════════════════════
+   INCOMEPRO — LANDING PAGE SCRIPT
+   script.js
+   Handles: Settings fetch · Form submission · Live counter ·
+            Countdown timer · WhatsApp redirect · Animations
+   ══════════════════════════════════════════════════════════════ */
 
-// ── CONFIG ──
-const CONFIG = {
-  // 🔧 REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycby01QP5XHgA8PMgvAb_umccjtnxFyYJ0_A794upNEaHy-pyK2xk5jLbmWsA5p4HOmBzmw/exec',
+'use strict';
 
-  // WhatsApp number (without + or spaces, include country code)
+/* ════════════════════════════════════════════
+   CONFIGURATION
+   Replace APPS_SCRIPT_URL with your deployed
+   Google Apps Script Web App URL.
+════════════════════════════════════════════ */
+const CFG = {
+  // 🔧 PASTE YOUR DEPLOYED GAS WEB APP URL HERE:
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxNN-RC8i3xScU0xUbSiPRo-pv6hhM8pB9HXXn1pkKZbQCKMmypumggnRqUoqE7FTQ-Ew/exec',
+
+  // WhatsApp number (country code + number, no spaces or +)
   WHATSAPP_NUMBER: '918318873808',
 
-  // Countdown: set your target date/time (24-hour format)
-  COUNTDOWN_TARGET: (() => {
+  // Default countdown target if settings can't be fetched.
+  // Format: "YYYY-MM-DDTHH:MM:SS"
+  DEFAULT_COUNTDOWN: (() => {
     const d = new Date();
-    d.setHours(2, 59, 59, 0);
-    return d;
+    d.setHours(23, 59, 59, 0);
+    return d.toISOString();
   })(),
 
-  // Registration counter start
-  REG_COUNTER_START: 14,
-  REG_COUNTER_MAX: 47,
+  // Default registration counter start shown before settings load
+  DEFAULT_REG_COUNT: 18,
+
+  // Max seconds between simulated counter bumps (for liveness effect)
+  COUNTER_BUMP_MIN_SEC: 10,
+  COUNTER_BUMP_MAX_SEC: 35,
 };
 
-// ── NAVBAR SCROLL ──
-const navbar = document.getElementById('navbar');
-window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 60);
+/* ════════════════════════════════════════════
+   DOM REFERENCES
+════════════════════════════════════════════ */
+const DOM = {
+  loader:       () => document.getElementById('page-loader'),
+  header:       () => document.getElementById('site-header'),
+  posterImg:    () => document.getElementById('poster-img'),
+  posterPh:     () => document.getElementById('poster-ph'),
+  regCount:     () => document.getElementById('reg-count'),
+  cdH:          () => document.getElementById('cd-h'),
+  cdM:          () => document.getElementById('cd-m'),
+  cdS:          () => document.getElementById('cd-s'),
+  cdWrap:       () => document.getElementById('countdown-wrap'),
+  cdExpired:    () => document.getElementById('cd-expired'),
+  seatsFill:    () => document.getElementById('seats-fill'),
+  form:         () => document.getElementById('lead-form'),
+  formView:     () => document.getElementById('form-view'),
+  successView:  () => document.getElementById('success-view'),
+  submitBtn:    () => document.getElementById('submit-btn'),
+  waBtn:        () => document.getElementById('wa-btn'),
+  toastWrap:    () => document.getElementById('toast-wrap'),
+  fName:        () => document.getElementById('f-name'),
+  fMobile:      () => document.getElementById('f-mobile'),
+  fCity:        () => document.getElementById('f-city'),
+  fieldName:    () => document.getElementById('field-name'),
+  fieldMobile:  () => document.getElementById('field-mobile'),
+  fieldCity:    () => document.getElementById('field-city'),
+};
+
+/* ════════════════════════════════════════════
+   APP STATE
+════════════════════════════════════════════ */
+let state = {
+  regCount:        CFG.DEFAULT_REG_COUNT,
+  countdownTarget: new Date(CFG.DEFAULT_COUNTDOWN),
+  cdInterval:      null,
+  bumpTimeout:     null,
+  settingsLoaded:  false,
+};
+
+/* ════════════════════════════════════════════
+   INIT — Entry point
+════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', async () => {
+  // Start loading settings from GAS in background
+  await loadSettings();
+
+  // Hide loader once settings attempted (success or fail)
+  hideLoader();
+
+  // Start live counter animation
+  animateCounterIn(state.regCount);
+  scheduleBump();
+
+  // Start countdown
+  startCountdown();
+
+  // Bind form
+  DOM.form()?.addEventListener('submit', handleSubmit);
+
+  // Sticky header on scroll
+  window.addEventListener('scroll', () => {
+    DOM.header()?.classList.toggle('scrolled', window.scrollY > 50);
+  }, { passive: true });
+
+  // Only allow numeric input on mobile field
+  DOM.fMobile()?.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+  });
 });
 
-// ── SCROLL REVEAL ──
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-// ── COUNTER ANIMATION ──
-function animateCount(el, from, to, duration = 1800, suffix = '') {
-  let startTime = null;
-  const step = (timestamp) => {
-    if (!startTime) startTime = timestamp;
-    const progress = Math.min((timestamp - startTime) / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-    const current = Math.floor(from + (to - from) * eased);
-    el.textContent = current + suffix;
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
-
-// Animate stats on enter
-const statsObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const targets = [
-        { el: document.getElementById('stat1'), to: 5000, suffix: '+' },
-        { el: document.getElementById('stat2'), to: 98, suffix: '%' },
-        { el: document.getElementById('stat3'), to: 3, suffix: ' साल' },
-        { el: document.getElementById('stat4'), to: 50, suffix: K => K+'+ शहर' },
-      ];
-      targets.forEach((t, i) => {
-        if (t.el) setTimeout(() => {
-          if (typeof t.suffix === 'function') {
-            // special
-            animateCount(t.el, 0, 50, 2000, '+');
-          } else {
-            animateCount(t.el, 0, t.to, 1800 + i * 200, t.suffix);
-          }
-        }, i * 100);
-      });
-      statsObserver.disconnect();
-    }
-  });
-}, { threshold: 0.3 });
-const statsBar = document.getElementById('stats-bar');
-if (statsBar) statsObserver.observe(statsBar);
-
-// ── LIVE REGISTRATION COUNTER ──
-let currentReg = CONFIG.REG_COUNTER_START;
-const regCounterEl = document.getElementById('reg-counter');
-
-function updateRegCounter() {
-  if (regCounterEl) regCounterEl.textContent = currentReg;
-}
-
-function simulateRegistration() {
-  if (currentReg < CONFIG.REG_COUNTER_MAX) {
-    const delay = 8000 + Math.random() * 25000; // every 8-33 seconds
-    setTimeout(() => {
-      currentReg++;
-      if (regCounterEl) {
-        regCounterEl.classList.add('bump');
-        regCounterEl.textContent = currentReg;
-        setTimeout(() => regCounterEl.classList.remove('bump'), 500);
-      }
-      simulateRegistration();
-    }, delay);
-  }
-}
-
-// Animate counter in on scroll
-const counterObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      animateCount(regCounterEl, 0, currentReg, 1500);
-      setTimeout(simulateRegistration, 3000);
-      counterObserver.disconnect();
-    }
-  });
-}, { threshold: 0.3 });
-const counterSection = document.getElementById('counter-section');
-if (counterSection) counterObserver.observe(counterSection);
-
-// ── COUNTDOWN TIMER ──
-const timerEls = {
-  h: document.getElementById('timer-h'),
-  m: document.getElementById('timer-m'),
-  s: document.getElementById('timer-s'),
-  wrap: document.getElementById('timer-wrap'),
-  expired: document.getElementById('timer-expired'),
-};
-
-function updateCountdown() {
-  const now = new Date().getTime();
-  const distance = CONFIG.COUNTDOWN_TARGET.getTime() - now;
-
-  if (distance <= 0) {
-    if (timerEls.wrap) timerEls.wrap.style.display = 'none';
-    if (timerEls.expired) timerEls.expired.style.display = 'inline-block';
+/* ════════════════════════════════════════════
+   SETTINGS — Fetch from Google Apps Script
+   GET ?action=getSettings
+   Returns: { posterUrl, countdownISO, regCount }
+════════════════════════════════════════════ */
+async function loadSettings() {
+  if (!CFG.APPS_SCRIPT_URL || CFG.APPS_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
+    console.warn('[IncomePro] Apps Script URL not set. Using defaults.');
     return;
   }
 
-  const h = Math.floor(distance / 3600000);
-  const m = Math.floor((distance % 3600000) / 60000);
-  const s = Math.floor((distance % 60000) / 1000);
+  try {
+    const url = `${CFG.APPS_SCRIPT_URL}?action=getSettings&t=${Date.now()}`;
+    const res = await fetchWithTimeout(url, { method: 'GET' }, 6000);
+    const data = await res.json();
+
+    if (data.status === 'success' && data.settings) {
+      const s = data.settings;
+
+      // Apply poster image
+      if (s.posterUrl && s.posterUrl.trim() !== '') {
+        applyPoster(s.posterUrl.trim());
+      }
+
+      // Apply countdown target
+      if (s.countdownISO && s.countdownISO.trim() !== '') {
+        const target = new Date(s.countdownISO.trim());
+        if (!isNaN(target)) {
+          state.countdownTarget = target;
+        }
+      }
+
+      // Apply registration counter
+      const cnt = parseInt(s.regCount, 10);
+      if (!isNaN(cnt) && cnt > 0) {
+        state.regCount = cnt;
+      }
+
+      state.settingsLoaded = true;
+      console.log('[IncomePro] Settings loaded:', s);
+    }
+  } catch (err) {
+    console.warn('[IncomePro] Could not load settings:', err.message);
+    // Silently fall back to defaults — page still works
+  }
+}
+
+/* ── Apply poster image to DOM ── */
+function applyPoster(url) {
+  const img = DOM.posterImg();
+  const ph  = DOM.posterPh();
+  if (!img) return;
+
+  img.onload = () => {
+    img.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+  };
+  img.onerror = () => {
+    img.style.display = 'none';
+    if (ph) ph.style.display = 'flex';
+  };
+  img.src = url;
+}
+
+/* ════════════════════════════════════════════
+   FORM SUBMISSION
+   POST → GAS → saves to Google Sheet
+   Then shows success message + WhatsApp link
+════════════════════════════════════════════ */
+async function handleSubmit(e) {
+  e.preventDefault();
+
+  const name   = DOM.fName()?.value.trim()   || '';
+  const mobile = DOM.fMobile()?.value.trim() || '';
+  const city   = DOM.fCity()?.value.trim()   || '';
+
+  // Client-side validation
+  let valid = true;
+  clearErrors();
+
+  if (!name || name.length < 2) {
+    setError('field-name', 'कृपया अपना पूरा नाम दर्ज करें');
+    valid = false;
+  }
+  if (!mobile || !/^[6-9]\d{9}$/.test(mobile)) {
+    setError('field-mobile', '10 अंकों का सही मोबाइल नंबर डालें');
+    valid = false;
+  }
+  if (!city || city.length < 2) {
+    setError('field-city', 'कृपया अपना शहर दर्ज करें');
+    valid = false;
+  }
+  if (!valid) return;
+
+  // Set loading state
+  setSubmitLoading(true);
+
+  // Build payload
+  const now     = new Date();
+  const payload = {
+    action: 'saveLead',
+    name,
+    mobile,
+    city,
+    date: now.toLocaleDateString('en-IN'),
+    time: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+  };
+
+  try {
+    if (CFG.APPS_SCRIPT_URL && !CFG.APPS_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
+      // Send to Google Apps Script
+      // Using mode: 'no-cors' because GAS doesn't send CORS headers on redirect
+      await fetch(CFG.APPS_SCRIPT_URL, {
+        method:  'POST',
+        mode:    'no-cors',            // GAS requires this
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      // NOTE: with no-cors we cannot read the response body,
+      // so we optimistically assume success after 200ms
+    } else {
+      // Demo mode: simulate network delay
+      await delay(800);
+    }
+
+    // Success!
+    onSubmitSuccess(name, mobile, city);
+
+  } catch (err) {
+    console.error('[IncomePro] Submit error:', err);
+    // Still show success to user — data likely went through
+    onSubmitSuccess(name, mobile, city);
+  }
+}
+
+/* ── Called on successful submission ── */
+function onSubmitSuccess(name, mobile, city) {
+  setSubmitLoading(false);
+
+  // Increment reg counter
+  state.regCount++;
+  const el = DOM.regCount();
+  if (el) {
+    el.textContent = state.regCount;
+    el.classList.remove('bump');
+    void el.offsetWidth; // reflow
+    el.classList.add('bump');
+  }
+
+  // Update seats fill
+  animateSeatsFill();
+
+  // Build WhatsApp link
+  const waMsg = encodeURIComponent(
+    `नमस्ते, मैंने ऑनलाइन साइड इनकम के लिए रजिस्ट्रेशन किया है।\nनाम: ${name}\nमोबाइल: ${mobile}\nशहर: ${city}`
+  );
+  const waUrl = `https://wa.me/${CFG.WHATSAPP_NUMBER}?text=${waMsg}`;
+  const waBtn = DOM.waBtn();
+  if (waBtn) waBtn.href = waUrl;
+
+  // Switch to success view
+  DOM.formView().style.display = 'none';
+  const sv = DOM.successView();
+  sv.style.display = 'block';
+
+  // Auto-open WhatsApp after 1.5s
+  setTimeout(() => {
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+  }, 1500);
+
+  showToast('✅ रजिस्ट्रेशन सफल!', 'success');
+}
+
+/* ════════════════════════════════════════════
+   COUNTDOWN TIMER
+   Target is loaded from GAS settings.
+   Resets to tomorrow midnight each day.
+════════════════════════════════════════════ */
+function startCountdown() {
+  // Clear any existing interval
+  if (state.cdInterval) clearInterval(state.cdInterval);
+
+  updateCountdown(); // immediate tick
+  state.cdInterval = setInterval(updateCountdown, 1000);
+}
+
+function updateCountdown() {
+  const now  = Date.now();
+  const diff = state.countdownTarget.getTime() - now;
+
+  const cdWrap   = DOM.cdWrap();
+  const cdExpired = DOM.cdExpired();
+
+  if (diff <= 0) {
+    // Timer expired
+    if (cdWrap)    cdWrap.style.display = 'none';
+    if (cdExpired) cdExpired.style.display = 'block';
+    if (state.cdInterval) clearInterval(state.cdInterval);
+    return;
+  }
+
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
 
   const pad = n => String(n).padStart(2, '0');
-  if (timerEls.h) timerEls.h.textContent = pad(h);
-  if (timerEls.m) timerEls.m.textContent = pad(m);
-  if (timerEls.s) timerEls.s.textContent = pad(s);
-  setTimeout(updateCountdown, 1000);
-}
-updateCountdown();
-
-// ── GALLERY ──
-const galleryItems = [
-  { cat: 'meeting', emoji: '🤝', label: 'टीम मीटिंग' },
-  { cat: 'event', emoji: '🎯', label: 'ट्रेनिंग इवेंट' },
-  { cat: 'success', emoji: '🏆', label: 'सफलता की कहानी' },
-  { cat: 'community', emoji: '👥', label: 'कम्युनिटी' },
-  { cat: 'meeting', emoji: '📊', label: 'बिजनेस प्रेजेंटेशन' },
-  { cat: 'event', emoji: '🎤', label: 'सेमिनार' },
-  { cat: 'success', emoji: '💰', label: 'इनकम प्रूफ' },
-  { cat: 'community', emoji: '🌟', label: 'स्टार अर्नर' },
-  { cat: 'meeting', emoji: '📱', label: 'ऑनलाइन मीटिंग' },
-  { cat: 'event', emoji: '🎓', label: 'वर्कशॉप' },
-  { cat: 'success', emoji: '🚀', label: 'ग्रोथ जर्नी' },
-  { cat: 'community', emoji: '❤️', label: 'टीम सेलिब्रेशन' },
-  { cat: 'meeting', emoji: '💼', label: 'बिजनेस क्लास' },
-  { cat: 'event', emoji: '🌍', label: 'राष्ट्रीय इवेंट' },
-  { cat: 'success', emoji: '🥇', label: 'अवार्ड' },
-  { cat: 'community', emoji: '🤗', label: 'साथी' },
-  { cat: 'meeting', emoji: '🖥️', label: 'वेबिनार' },
-  { cat: 'event', emoji: '🎪', label: 'महा इवेंट' },
-  { cat: 'success', emoji: '📈', label: 'बिजनेस ग्रोथ' },
-  { cat: 'community', emoji: '👨‍👩‍👧‍👦', label: 'परिवार' },
-  { cat: 'meeting', emoji: '☎️', label: 'कॉन्फ्रेंस' },
-  { cat: 'event', emoji: '🌐', label: 'ग्लोबल इवेंट' },
-  { cat: 'success', emoji: '💎', label: 'डायमंड' },
-  { cat: 'community', emoji: '🙌', label: 'कम्युनिटी लव' },
-];
-
-function renderGallery(filter = 'all') {
-  const grid = document.getElementById('gallery-grid');
-  if (!grid) return;
-
-  const filtered = filter === 'all' ? galleryItems : galleryItems.filter(i => i.cat === filter);
-  grid.innerHTML = filtered.map((item, idx) => `
-    <div class="gallery-item reveal reveal-delay-${(idx % 4) + 1}" style="transition-delay:${idx * 0.05}s" data-cat="${item.cat}">
-      <div class="gallery-placeholder">
-        <span class="g-icon">${item.emoji}</span>
-        <span>${item.label}</span>
-      </div>
-      <div class="gallery-item-overlay"></div>
-    </div>
-  `).join('');
-
-  // Re-observe new items
-  grid.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  const cdH = DOM.cdH(), cdM = DOM.cdM(), cdS = DOM.cdS();
+  if (cdH) cdH.textContent = pad(h);
+  if (cdM) cdM.textContent = pad(m);
+  if (cdS) cdS.textContent = pad(s);
 }
 
-renderGallery();
-
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    renderGallery(this.dataset.filter);
-  });
-});
-
-// ── FORM SUBMISSION ──
-const form = document.getElementById('lead-form');
-const formCard = document.getElementById('form-card-inner');
-const thankyouBox = document.getElementById('thankyou-box');
-const submitBtn = document.getElementById('submit-btn');
-
-if (form) {
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById('f-name').value.trim();
-    const mobile = document.getElementById('f-mobile').value.trim();
-    const city = document.getElementById('f-city').value.trim();
-
-    // Basic validation
-    if (!name) { showFieldError('f-name', 'नाम दर्ज करें'); return; }
-    if (!mobile || !/^\d{10}$/.test(mobile)) { showFieldError('f-mobile', '10 अंकों का मोबाइल नंबर दर्ज करें'); return; }
-    if (!city) { showFieldError('f-city', 'शहर दर्ज करें'); return; }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'भेजा जा रहा है...';
-
-    const now = new Date();
-    const payload = {
-      name, mobile, city,
-      date: now.toLocaleDateString('en-IN'),
-      time: now.toLocaleTimeString('en-IN'),
-    };
-
-    try {
-      await fetch(CONFIG.APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      // Even with no-cors we assume success
-      showThankYou(name, mobile);
-      currentReg++;
-      if (regCounterEl) regCounterEl.textContent = currentReg;
-
-    } catch (err) {
-      console.error('Submission error:', err);
-      showThankYou(name, mobile); // Still show thank you (data will retry)
-    }
-  });
-}
-
-function showFieldError(id, msg) {
-  const el = document.getElementById(id);
+/* ════════════════════════════════════════════
+   LIVE REGISTRATION COUNTER
+   - Initial value from settings
+   - Animates up from 0 on page load
+   - Random bump every ~10-35 seconds
+════════════════════════════════════════════ */
+function animateCounterIn(target) {
+  const el = DOM.regCount();
   if (!el) return;
-  el.style.borderColor = 'var(--danger)';
-  el.style.boxShadow = '0 0 0 3px rgba(255,77,109,0.15)';
-  
-  let errEl = el.parentNode.querySelector('.field-err');
-  if (!errEl) {
-    errEl = document.createElement('span');
-    errEl.className = 'field-err';
-    errEl.style.cssText = 'color:var(--danger);font-size:0.78rem;font-family:var(--font-hindi);display:block;margin-top:4px;';
-    el.parentNode.appendChild(errEl);
-  }
-  errEl.textContent = msg;
-  el.focus();
-  setTimeout(() => {
-    el.style.borderColor = '';
-    el.style.boxShadow = '';
-    if (errEl) errEl.remove();
-  }, 3000);
+
+  let current = 0;
+  const step = Math.ceil(target / 40);
+  const timer = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = current;
+    if (current >= target) clearInterval(timer);
+  }, 40);
 }
 
-function showThankYou(name, mobile) {
-  if (formCard) formCard.style.display = 'none';
-  if (thankyouBox) {
-    thankyouBox.style.display = 'block';
-    const waLink = document.getElementById('wa-link');
-    if (waLink) {
-      const msg = encodeURIComponent(`नमस्ते, मैंने ऑनलाइन साइड इनकम के लिए रजिस्ट्रेशन किया है।\nनाम: ${name}\nमोबाइल: ${mobile}`);
-      waLink.href = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${msg}`;
+function scheduleBump() {
+  const { COUNTER_BUMP_MIN_SEC: mn, COUNTER_BUMP_MAX_SEC: mx } = CFG;
+  const delay_ms = (mn + Math.random() * (mx - mn)) * 1000;
+
+  state.bumpTimeout = setTimeout(() => {
+    state.regCount++;
+    const el = DOM.regCount();
+    if (el) {
+      el.textContent = state.regCount;
+      el.classList.remove('bump');
+      void el.offsetWidth;
+      el.classList.add('bump');
     }
-    // Auto open WhatsApp after 1.5s
-    setTimeout(() => {
-      const waLink = document.getElementById('wa-link');
-      if (waLink) waLink.click();
-    }, 1500);
+    animateSeatsFill();
+    scheduleBump(); // schedule next
+  }, delay_ms);
+}
+
+/* ════════════════════════════════════════════
+   UI HELPERS
+════════════════════════════════════════════ */
+
+function hideLoader() {
+  const loader = DOM.loader();
+  if (loader) {
+    setTimeout(() => loader.classList.add('hidden'), 300);
   }
 }
 
-// ── SMOOTH SCROLL for CTA ──
-document.querySelectorAll('a[href="#register"]').forEach(a => {
-  a.addEventListener('click', e => {
-    e.preventDefault();
-    document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
-  });
-});
-
-// ── CSS animation for bump ──
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes bump {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.3); color: #ffffff; }
-    100% { transform: scale(1); }
-  }
-  .bump { animation: bump 0.4s ease-in-out; }
-`;
-document.head.appendChild(style);
-
-// ── FLOATING PARTICLES ──
-function createParticle() {
-  const p = document.createElement('div');
-  p.style.cssText = `
-    position:fixed;
-    width:${2 + Math.random()*3}px;
-    height:${2 + Math.random()*3}px;
-    background:${Math.random() > 0.5 ? 'var(--neon)' : 'var(--gold)'};
-    border-radius:50%;
-    pointer-events:none;
-    z-index:0;
-    opacity:${0.2 + Math.random()*0.4};
-    left:${Math.random()*100}vw;
-    top:${100 + Math.random()*20}vh;
-    animation: floatUp ${6 + Math.random()*8}s linear forwards;
-  `;
-  document.body.appendChild(p);
-  setTimeout(() => p.remove(), 14000);
+function setSubmitLoading(on) {
+  const btn = DOM.submitBtn();
+  if (!btn) return;
+  btn.disabled = on;
+  btn.classList.toggle('loading', on);
 }
 
-const particleStyle = document.createElement('style');
-particleStyle.textContent = `
-  @keyframes floatUp {
-    to { transform: translateY(-120vh) rotate(${Math.random()*720}deg); opacity: 0; }
+function setError(fieldId, msg) {
+  const field = document.getElementById(fieldId);
+  if (!field) return;
+  field.classList.add('has-error');
+  const errEl = field.querySelector('.field-err');
+  if (errEl) errEl.textContent = msg;
+}
+
+function clearErrors() {
+  document.querySelectorAll('.field.has-error').forEach(f => f.classList.remove('has-error'));
+}
+
+function animateSeatsFill() {
+  const fill = DOM.seatsFill();
+  if (!fill) return;
+  const current = parseFloat(fill.style.width) || 68;
+  const next = Math.min(current + 0.5, 99);
+  fill.style.width = next + '%';
+}
+
+/* ── Toast notification ── */
+function showToast(msg, type = 'success') {
+  const wrap = DOM.toastWrap();
+  if (!wrap) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast t-${type}`;
+  toast.textContent = msg;
+  wrap.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.transition = 'opacity 0.4s, transform 0.4s';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(20px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+}
+
+/* ════════════════════════════════════════════
+   UTILITY
+════════════════════════════════════════════ */
+
+/* fetch() with timeout */
+async function fetchWithTimeout(url, options = {}, ms = 8000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return res;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
   }
-`;
-document.head.appendChild(particleStyle);
-setInterval(createParticle, 2000);
+}
+
+/* Promise-based delay */
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
