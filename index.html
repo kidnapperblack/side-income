@@ -6,22 +6,48 @@
   <title>पार्ट टाइम इनकम — मोबाइल से शुरू करें</title>
   <meta name="description" content="घर बैठे मोबाइल से पार्ट टाइम इनकम शुरू करें। आज ही Free रजिस्ट्रेशन करें।" />
   <link rel="stylesheet" href="style.css" />
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SUPABASE JS v2 — CDN (needed for Supabase client in script.js)
+       GitHub Pages compatible — static file, no server needed.
+  ═══════════════════════════════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
 <!-- ════════════════════════════════════════════
-     BACKGROUND LAYERS (purely decorative)
+     BACKGROUND LAYERS
 ════════════════════════════════════════════ -->
 <div class="bg-mesh" aria-hidden="true"></div>
 <div class="bg-grid" aria-hidden="true"></div>
 
 <!-- ════════════════════════════════════════════
      PAGE LOADER
-     Shown while settings are fetched from GAS
 ════════════════════════════════════════════ -->
 <div class="page-loader" id="page-loader">
   <div class="loader-ring"></div>
   <p class="loader-text">लोड हो रहा है...</p>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SOCIAL PROOF POPUP (bottom-left)
+     Rotates real Indian names every 5 seconds
+     Slides in / fades out smoothly
+════════════════════════════════════════════ -->
+<div class="sp-popup" id="sp-popup" role="status" aria-live="polite">
+  <div class="sp-avatar" id="sp-avatar">R</div>
+  <div class="sp-body">
+    <div class="sp-name" id="sp-name">Rahul — Delhi से</div>
+    <div class="sp-meta">
+      <span class="sp-dot"></span>
+      अभी रजिस्टर किया
+    </div>
+  </div>
+  <button
+    class="sp-close"
+    onclick="closeSocialProof()"
+    aria-label="बंद करें"
+  >✕</button>
 </div>
 
 <!-- ════════════════════════════════════════════
@@ -32,43 +58,42 @@
   <!-- ── HEADER ── -->
   <header class="site-header" id="site-header">
     <span class="logo">Income<span class="accent">Pro</span></span>
-    <span class="live-pill">
-      <span class="live-dot"></span>
-      Live Registration Open
-    </span>
+
+    <div class="header-right">
+      <!-- Visitor activity indicator — fake, dynamically fluctuates -->
+      <span class="viewer-badge">
+        <span class="viewer-dot"></span>
+        <span id="viewer-count">23</span>&nbsp;लोग देख रहे हैं
+      </span>
+      <span class="live-pill">
+        <span class="live-dot"></span>
+        Live Open
+      </span>
+    </div>
   </header>
-  <!-- NOTE: No dashboard/admin link here — intentionally omitted for security -->
 
   <!-- ════════════════════════════════════
-       HERO — Everything above the fold
-       Poster | Counter | Timer | Form
+       HERO — All above the fold
   ════════════════════════════════════ -->
   <main class="hero" id="hero">
     <div class="hero-inner">
 
-      <!-- ══ LEFT: POSTER IMAGE ══ -->
+      <!-- ══ LEFT: POSTER ══ -->
       <div class="poster-col">
         <div class="poster-wrap">
           <div class="poster-glow-ring" aria-hidden="true"></div>
           <div class="poster-frame" id="poster-frame">
-            <!--
-              POSTER IMAGE is loaded dynamically via JS from settings.
-              Admin can update the poster URL from the dashboard.
-              Default shown below if no URL is set.
-            -->
             <img
               id="poster-img"
               src=""
               alt="Opportunity Poster"
               style="display:none;"
-              onerror="this.style.display='none'; document.getElementById('poster-ph').style.display='flex';"
+              onerror="this.style.display='none';document.getElementById('poster-ph').style.display='flex';"
             />
             <div class="poster-placeholder" id="poster-ph">
               <span class="ph-icon">🖼️</span>
               <p>पोस्टर यहाँ दिखेगा<br><small>Dashboard से URL डालें</small></p>
             </div>
-
-            <!-- Stats overlay at bottom of poster -->
             <div class="poster-stats" aria-label="Statistics">
               <div class="ps-item">
                 <div class="ps-num">5000+</div>
@@ -85,7 +110,7 @@
             </div>
           </div>
         </div>
-      </div><!-- /poster-col -->
+      </div>
 
       <!-- ══ RIGHT: FORM PANEL ══ -->
       <div class="form-col">
@@ -101,28 +126,18 @@
           </p>
         </div>
 
-        <!-- ── METRICS ROW: Counter + Countdown ── -->
+        <!-- ── METRICS ROW ── -->
         <div class="metrics-row" id="metrics-row">
 
-          <!-- Today's Registration Counter -->
+          <!-- Today counter — reads from Supabase (real count) -->
           <div class="metric-card c-green">
             <div class="mc-lbl">आज रजिस्टर किए</div>
-            <!--
-              #reg-count is updated live:
-              1. Initial value loaded from GAS settings
-              2. Increases when a new user submits the form
-              3. Simulated random increments keep it dynamic
-            -->
             <div class="mc-val" id="reg-count">—</div>
           </div>
 
-          <!-- Countdown Timer -->
+          <!-- Countdown — target from Supabase settings -->
           <div class="metric-card c-gold">
             <div class="mc-lbl">रजिस्ट्रेशन बंद होने में</div>
-            <!--
-              Countdown target is fetched from GAS settings.
-              Admin can change it from the dashboard.
-            -->
             <div class="cd-row mc-val" id="countdown-wrap">
               <span id="cd-h">00</span>
               <span class="cd-colon">:</span>
@@ -132,73 +147,71 @@
             </div>
             <div class="cd-expired" id="cd-expired">⛔ आज बंद हो चुका है</div>
             <div class="seats-row">
-              <div class="seats-bar"><div class="seats-fill" id="seats-fill" style="width:68%"></div></div>
-              <div class="seats-txt">68% seats filled today</div>
+              <div class="seats-bar">
+                <div class="seats-fill" id="seats-fill" style="width:0%"></div>
+              </div>
+              <div class="seats-txt" id="seats-pct-txt">लोड हो रहा है...</div>
             </div>
           </div>
 
-        </div><!-- /metrics-row -->
+        </div>
 
-        <!-- ── LEAD CAPTURE FORM ── -->
+        <!-- ══════════════════════════════════════
+             SEAT COUNTER (NEW)
+             Total Seats | Seats Left | Urgency
+        ══════════════════════════════════════ -->
+        <div class="seat-counter" id="seat-counter">
+          <span class="seat-fire">🔥 Limited Seats</span>
+          <div class="seat-grid">
+            <div class="seat-item">
+              <span class="seat-num" id="seat-total">50</span>
+              <span class="seat-lbl">Total Seats</span>
+            </div>
+            <div class="seat-divider"></div>
+            <div class="seat-item">
+              <span class="seat-num seat-left" id="seat-left">—</span>
+              <span class="seat-lbl">Seats Left</span>
+            </div>
+          </div>
+          <!-- Urgency strip — only visible when seats left < 10 -->
+          <div class="seat-urgency" id="seat-urgency">
+            ⚠️ <span id="urgency-text">Only 8 Seats Left Today!</span>
+          </div>
+        </div>
+
+        <!-- ── FORM CARD ── -->
         <div class="form-card" id="form-card">
 
-          <!-- Form view -->
           <div id="form-view">
             <div class="form-heading">📝 Free रजिस्ट्रेशन करें</div>
 
             <form id="lead-form" novalidate autocomplete="on">
 
-              <!-- Name Field -->
               <div class="field" id="field-name">
-                <input
-                  type="text"
-                  id="f-name"
-                  name="name"
-                  placeholder="आपका नाम"
-                  autocomplete="name"
-                  maxlength="80"
-                  required
-                />
+                <input type="text" id="f-name" name="name"
+                  placeholder="आपका नाम" autocomplete="name" maxlength="80" required />
                 <label for="f-name">आपका पूरा नाम</label>
                 <span class="field-icon">👤</span>
                 <span class="field-err" id="err-name">नाम दर्ज करें</span>
               </div>
 
-              <!-- Mobile Field -->
               <div class="field" id="field-mobile">
-                <input
-                  type="tel"
-                  id="f-mobile"
-                  name="mobile"
-                  placeholder="मोबाइल नंबर"
-                  autocomplete="tel"
-                  maxlength="10"
-                  inputmode="numeric"
-                  pattern="[0-9]{10}"
-                  required
-                />
+                <input type="tel" id="f-mobile" name="mobile"
+                  placeholder="मोबाइल नंबर" autocomplete="tel"
+                  maxlength="10" inputmode="numeric" pattern="[0-9]{10}" required />
                 <label for="f-mobile">मोबाइल नंबर (10 अंक)</label>
                 <span class="field-icon">📱</span>
                 <span class="field-err" id="err-mobile">10 अंकों का मोबाइल नंबर डालें</span>
               </div>
 
-              <!-- City Field -->
               <div class="field" id="field-city">
-                <input
-                  type="text"
-                  id="f-city"
-                  name="city"
-                  placeholder="आपका शहर"
-                  autocomplete="address-level2"
-                  maxlength="60"
-                  required
-                />
+                <input type="text" id="f-city" name="city"
+                  placeholder="आपका शहर" autocomplete="address-level2" maxlength="60" required />
                 <label for="f-city">आपका शहर / जिला</label>
                 <span class="field-icon">🏙️</span>
                 <span class="field-err" id="err-city">शहर दर्ज करें</span>
               </div>
 
-              <!-- Submit -->
               <button type="submit" class="btn-submit" id="submit-btn">
                 <span class="btn-text">🚀 Free रजिस्ट्रेशन करें</span>
                 <span class="btn-spinner"></span>
@@ -211,14 +224,14 @@
             </div>
           </div>
 
-          <!-- Success view (shown after form submits) -->
+          <!-- ══ SUCCESS VIEW — WhatsApp redirect UNCHANGED ══ -->
           <div id="success-view" class="success-panel">
             <div class="success-icon">✅</div>
             <h2 class="success-title">रजिस्ट्रेशन सफल!</h2>
             <p class="success-desc">
               धन्यवाद! हमारी टीम जल्द ही आपसे संपर्क करेगी।
             </p>
-            <!-- WhatsApp link is built dynamically in script.js -->
+            <!-- WhatsApp link — href set by script.js — DO NOT CHANGE FORMAT -->
             <a href="#" id="wa-btn" class="btn-whatsapp" target="_blank" rel="noopener noreferrer">
               💬 WhatsApp पर मैसेज करें
             </a>
@@ -231,17 +244,14 @@
     </div><!-- /hero-inner -->
   </main>
 
-  <!-- ── FOOTER ── -->
   <footer class="site-footer">
     <p class="footer-text">© 2024 IncomePro · सभी अधिकार सुरक्षित · यह एक Lead Generation Page है</p>
   </footer>
 
 </div><!-- /page-wrapper -->
 
-<!-- ── TOAST CONTAINER ── -->
 <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
 
-<!-- ── SCRIPTS ── -->
 <script src="script.js"></script>
 </body>
 </html>
